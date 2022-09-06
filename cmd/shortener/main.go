@@ -12,15 +12,17 @@ import (
 
 func main() {
 	st := storage.NewStorage(map[string]string{})
-	app := app.InitApp(st)
-	h := handler.InitHandler(app)
+	a := app.InitApp(st)
+	h := handler.InitHandler(a)
 
 	router := chi.NewRouter()
 	router.Get("/{urlHash}", h.HandleGetURL)
 	router.Post("/", h.HandlePostURL)
 	err := http.ListenAndServe(":8080", router)
+
 	if err != nil {
 		panic("Server won't start ;( ")
 	}
+
 	fmt.Println("go!")
 }
