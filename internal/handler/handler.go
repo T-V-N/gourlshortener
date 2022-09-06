@@ -57,6 +57,10 @@ func (h *Handler) HandlePostURL(w http.ResponseWriter, r *http.Request) {
 	hash := h.storage.SaveUrl(strings.ToLower(string(url)))
 	
 	w.WriteHeader(http.StatusCreated)
+<<<<<<< HEAD
 	w.Write([]byte(r.Host+"/"+hash))
 >>>>>>> 79494da... remove json response body
+=======
+	w.Write([]byte("http://"+r.Host+"/"+hash))
+>>>>>>> 007597d... proper localhost link
 }
