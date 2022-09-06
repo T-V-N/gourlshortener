@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/T-V-N/gourlshortener/internal/app"
 	"github.com/T-V-N/gourlshortener/internal/handler"
 	"github.com/T-V-N/gourlshortener/internal/storage"
 	"github.com/stretchr/testify/assert"
@@ -40,7 +41,8 @@ func Test_HandlerPostURL(t *testing.T) {
 		},
 	}
 	st := storage.NewStorage(map[string]string{})
-	hn := handler.InitHandler(st)
+	app := app.InitApp(st)
+	hn := handler.InitHandler(app)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -88,7 +90,8 @@ func Test_HandlerGetURL(t *testing.T) {
 	}
 
 	st := storage.NewStorage(map[string]string{"e62e2446":"https://youtube.com"})
-	hn := handler.InitHandler(st)
+	app := app.InitApp(st)
+	hn := handler.InitHandler(app)
 
 
 	for _, tt := range tests {
