@@ -27,7 +27,7 @@ func (h *Handler) HandleGetURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url, err := h.app.GetUrl(id)
+	url, err := h.app.GetURL(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

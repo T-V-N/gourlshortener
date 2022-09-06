@@ -28,7 +28,7 @@ func (st *Storage) SaveURL(url string) (string, error) {
 func (st *Storage) GetURL(hash string) (string, error) {
 	url, exists := st.db[hash]
 	if !exists {
-		return hash, errors.New("An URL with this hash doesn't exist ;(")
+		return hash, errors.New("An URL with this hash doesn't exist")
 	}
 	return url, nil
 }

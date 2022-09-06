@@ -27,7 +27,7 @@ func (app *App) SaveURL(URL string) (string, error) {
 	return hash, nil
 }
 
-func (app *App) GetUrl(id string) (string, error) {
+func (app *App) GetURL(id string) (string, error) {
 	url, err := app.db.GetURL(id)
 	if err != nil {
 		return id, err
