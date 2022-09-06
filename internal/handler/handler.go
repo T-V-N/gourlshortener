@@ -3,22 +3,21 @@ package handler
 import (
 	"io"
 	"net/http"
-	"net/url"
 	"strings"
 
-	"github.com/T-V-N/gourlshortener/internal/storage"
+	"github.com/T-V-N/gourlshortener/internal/app"
 )
 
 type Handler struct {
-	storage *storage.Storage
+	app *app.App
 }
 
 type URL struct {
     URL string `json:"URL"`
 }
 
-func InitHandler(st *storage.Storage) *Handler {
-	return &Handler{storage: st}
+func InitHandler(app *app.App) *Handler {
+	return &Handler{app}
 }
 func (h *Handler) HandleGetURL(w http.ResponseWriter, r *http.Request) {
 	id := strings.Split(r.URL.Path, "/")[1]
@@ -27,7 +26,7 @@ func (h *Handler) HandleGetURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url, err := h.storage.GetUrl(id) 
+	url, err := h.app.GetUrl(id) 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -38,18 +37,17 @@ func (h *Handler) HandleGetURL(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) HandlePostURL(w http.ResponseWriter, r *http.Request) { 
 	body, err := io.ReadAll(r.Body)
-	
 	if err != nil  {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	u, err := url.ParseRequestURI(string(body))
+	hash, err := h.app.SaveURL(string(body))
 	if err != nil {
 		http.Error(w, "Wrong URL passed", http.StatusBadRequest)
 		return
 	}
-	hash := h.storage.SaveUrl(strings.ToLower(u.String()))
+
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("http://"+r.Host+"/"+hash))
 }
