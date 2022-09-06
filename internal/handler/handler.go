@@ -13,7 +13,7 @@ type Handler struct {
 }
 
 type URL struct {
-    URL string `json:"URL"`
+	URL string `json:"URL"`
 }
 
 func InitHandler(app *app.App) *Handler {
@@ -27,18 +27,18 @@ func (h *Handler) HandleGetURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url, err := h.app.GetUrl(id) 
+	url, err := h.app.GetUrl(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	w.Header().Add("Location", url)
-	w.WriteHeader(http.StatusTemporaryRedirect) 
+	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func (h *Handler) HandlePostURL(w http.ResponseWriter, r *http.Request) { 
+func (h *Handler) HandlePostURL(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
-	if err != nil  {
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -50,5 +50,9 @@ func (h *Handler) HandlePostURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("http://"+r.Host+"/"+hash))
+
+	_, err = w.Write([]byte("http://" + r.Host + "/" + hash))
+	if err != nil {
+		panic(err.Error())
+	}
 }

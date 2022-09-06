@@ -25,11 +25,10 @@ func (st *Storage) SaveUrl(url string) (string, error) {
 	return shortHash, nil
 }
 
-func (st *Storage) GetUrl(hash string) (string, error){
+func (st *Storage) GetUrl(hash string) (string, error) {
 	url, exists := st.db[hash]
 	if !exists {
 		return hash, errors.New("An URL with this hash doesn't exist ;(")
-	} 
+	}
 	return url, nil
 }
-
