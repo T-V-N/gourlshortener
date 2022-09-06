@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"io"
 	"net/http"
 	"strings"
@@ -43,7 +42,7 @@ func (h *Handler) HandlePostURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	hash := h.storage.SaveUrl(strings.ToLower(string(url)))
-	resp, err := json.Marshal(URL{r.Host+"/"+hash})
+	
 	w.WriteHeader(http.StatusCreated)
-	w.Write(resp)
+	w.Write([]byte(r.Host+"/"+hash))
 }
