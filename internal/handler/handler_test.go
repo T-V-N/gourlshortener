@@ -10,6 +10,7 @@ import (
 	"github.com/T-V-N/gourlshortener/internal/app"
 	"github.com/T-V-N/gourlshortener/internal/handler"
 	"github.com/T-V-N/gourlshortener/internal/storage"
+	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -98,9 +99,10 @@ func Test_HandlerGetURL(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			request := httptest.NewRequest(http.MethodGet, "/"+tt.param, nil)
             w := httptest.NewRecorder()
-            h := http.HandlerFunc(hn.HandleGetURL)
-            // запускаем сервер
-            h.ServeHTTP(w, request)
+			r := chi.NewRouter()
+			r.Get("/",hn.HandleGetURL)
+			r.Get("/{urlHash}",hn.HandleGetURL)
+            r.ServeHTTP(w, request)
             res := w.Result()
 
 			assert.Equal(t,  tt.want.location, res.Header.Get("Location"))
