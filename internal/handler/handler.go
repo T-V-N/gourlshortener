@@ -49,8 +49,7 @@ func (h *Handler) HandlePostURL(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Wrong URL passed", http.StatusBadRequest)
 		return
 	}
-	hash := h.storage.SaveUrl(u.String())
-	// resp, err := json.Marshal(URL{hash})
+	hash := h.storage.SaveUrl(strings.ToLower(u.String()))
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte(hash))
+	w.Write([]byte("http://"+r.Host+"/"+hash))
 }
