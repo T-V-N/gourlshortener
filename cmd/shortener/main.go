@@ -16,7 +16,7 @@ func main() {
 	h := handler.InitHandler(app)
 	
 	router := chi.NewRouter()
-	router.Get("/:id", h.HandleGetURL)
+	router.Get("/{urlHash}", h.HandleGetURL)
 	router.Post("/", h.HandlePostURL)
 	http.ListenAndServe(":8080", router)
 	fmt.Println("go!")

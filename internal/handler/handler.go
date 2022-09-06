@@ -3,9 +3,9 @@ package handler
 import (
 	"io"
 	"net/http"
-	"strings"
 
 	"github.com/T-V-N/gourlshortener/internal/app"
+	"github.com/go-chi/chi/v5"
 )
 
 type Handler struct {
@@ -20,7 +20,8 @@ func InitHandler(app *app.App) *Handler {
 	return &Handler{app}
 }
 func (h *Handler) HandleGetURL(w http.ResponseWriter, r *http.Request) {
-	id := strings.Split(r.URL.Path, "/")[1]
+	id := chi.URLParam(r, "urlHash")
+
 	if id == "" {
 		http.Error(w, "no short URL provided", http.StatusBadRequest)
 		return
