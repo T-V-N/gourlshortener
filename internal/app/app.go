@@ -15,22 +15,27 @@ func InitApp(st *storage.Storage) *App {
 	return &App{st}
 }
 
-func (app *App) SaveURL(URL string) (string, error) {
-	u, err := url.ParseRequestURI(URL)
+func (app *App) SaveURL(rawURL string) (string, error) {
+	u, err := url.ParseRequestURI(rawURL)
 	if err != nil {
-		return URL, err
+		return rawURL, err
 	}
+
 	hash, err := app.db.SaveURL(strings.ToLower(u.String()))
+
 	if err != nil {
 		return u.String(), err
 	}
+
 	return hash, nil
 }
 
 func (app *App) GetURL(id string) (string, error) {
-	url, err := app.db.GetURL(id)
+	u, err := app.db.GetURL(id)
+
 	if err != nil {
 		return id, err
 	}
-	return url, nil
+
+	return u, nil
 }

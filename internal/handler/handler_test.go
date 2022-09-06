@@ -16,9 +16,10 @@ import (
 
 func Test_HandlerPostURL(t *testing.T) {
 	type want struct {
-		statusCode int
 		response   string
+		statusCode int
 	}
+
 	tests := []struct {
 		name string
 		body []byte
@@ -42,8 +43,8 @@ func Test_HandlerPostURL(t *testing.T) {
 		},
 	}
 	st := storage.NewStorage(map[string]string{})
-	app := app.InitApp(st)
-	hn := handler.InitHandler(app)
+	a := app.InitApp(st)
+	hn := handler.InitHandler(a)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -58,15 +59,15 @@ func Test_HandlerPostURL(t *testing.T) {
 
 			assert.Equal(t, tt.want.response, string(resBody))
 			assert.Equal(t, tt.want.statusCode, res.StatusCode)
-
 		})
 	}
 }
 func Test_HandlerGetURL(t *testing.T) {
 	type want struct {
-		statusCode int
 		location   string
+		statusCode int
 	}
+
 	tests := []struct {
 		name  string
 		param string
@@ -91,8 +92,8 @@ func Test_HandlerGetURL(t *testing.T) {
 	}
 
 	st := storage.NewStorage(map[string]string{"e62e2446": "https://youtube.com"})
-	app := app.InitApp(st)
-	hn := handler.InitHandler(app)
+	a := app.InitApp(st)
+	hn := handler.InitHandler(a)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -107,7 +108,6 @@ func Test_HandlerGetURL(t *testing.T) {
 
 			assert.Equal(t, tt.want.location, res.Header.Get("Location"))
 			assert.Equal(t, tt.want.statusCode, res.StatusCode)
-
 		})
 	}
 }

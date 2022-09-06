@@ -16,9 +16,10 @@ type URL struct {
 	URL string `json:"URL"`
 }
 
-func InitHandler(app *app.App) *Handler {
-	return &Handler{app}
+func InitHandler(a *app.App) *Handler {
+	return &Handler{a}
 }
+
 func (h *Handler) HandleGetURL(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "urlHash")
 
@@ -32,6 +33,7 @@ func (h *Handler) HandleGetURL(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
 	w.Header().Add("Location", url)
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
