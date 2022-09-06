@@ -42,7 +42,7 @@ func (h *Handler) HandlePostURL(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	hash := h.storage.SaveUrl(string(url))
+	hash := h.storage.SaveUrl(strings.ToLower(string(url)))
 	resp, err := json.Marshal(URL{r.Host+"/"+hash})
 	w.WriteHeader(http.StatusCreated)
 	w.Write(resp)
