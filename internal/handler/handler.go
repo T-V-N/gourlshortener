@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"encoding/json"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/T-V-N/gourlshortener/internal/storage"
@@ -23,13 +23,13 @@ func InitHandler(st *storage.Storage) *Handler {
 func (h *Handler) HandleGetURL(w http.ResponseWriter, r *http.Request) {
 	id := strings.Split(r.URL.Path, "/")[1]
 	if id == "" {
-		http.Error(w, "no short URL provided", 500)
+		http.Error(w, "no short URL provided", http.StatusBadRequest)
 		return
 	}
 
 	url, err := h.storage.GetUrl(id) 
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	w.Header().Add("Location", url)
@@ -37,13 +37,20 @@ func (h *Handler) HandleGetURL(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) HandlePostURL(w http.ResponseWriter, r *http.Request) { 
-	url, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
+	body, err := io.ReadAll(r.Body)
+	
+	if err != nil  {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	hash := h.storage.SaveUrl(string(url))
-	resp, err := json.Marshal(URL{r.Host+"/"+hash})
+
+	u, err := url.ParseRequestURI(string(body))
+	if err != nil {
+		http.Error(w, "Wrong URL passed", http.StatusBadRequest)
+		return
+	}
+	hash := h.storage.SaveUrl(u.String())
+	// resp, err := json.Marshal(URL{hash})
 	w.WriteHeader(http.StatusCreated)
-	w.Write(resp)
+	w.Write([]byte(hash))
 }

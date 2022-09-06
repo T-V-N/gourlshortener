@@ -10,8 +10,12 @@ type Storage struct {
 	db map[string]string
 }
 
-func NewStorage() *Storage {
-	return &Storage{make(map[string]string)}
+func NewStorage(data map[string]string) *Storage {
+	storage := &Storage{make(map[string]string)}
+	if len(data) != 0 {
+		storage.db = data
+	}
+	return storage
 }
 
 func (st *Storage) SaveUrl(url string) (string) {

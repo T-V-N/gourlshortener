@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	st := storage.NewStorage()
+	st := storage.NewStorage(map[string]string{})
 	h := handler.InitHandler(st)
 	server := server.InitServer(h)
 
