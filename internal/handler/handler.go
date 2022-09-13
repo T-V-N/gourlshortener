@@ -12,10 +12,6 @@ type Handler struct {
 	app *app.App
 }
 
-type URL struct {
-	URL string `json:"URL"`
-}
-
 func InitHandler(a *app.App) *Handler {
 	return &Handler{a}
 }

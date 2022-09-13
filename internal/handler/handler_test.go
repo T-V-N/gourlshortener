@@ -2,6 +2,7 @@ package handler_test
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -36,6 +37,14 @@ func Test_HandlerPostURL(t *testing.T) {
 		{
 			name: "Wrong URL passed",
 			body: []byte(""),
+			want: want{
+				statusCode: http.StatusBadRequest,
+				response:   "Wrong URL passed\n",
+			},
+		},
+		{
+			name: "Incorrect URL passed",
+			body: []byte("ht_t_p://google.com"),
 			want: want{
 				statusCode: http.StatusBadRequest,
 				response:   "Wrong URL passed\n",
@@ -99,10 +108,13 @@ func Test_HandlerGetURL(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			request := httptest.NewRequest(http.MethodGet, "/"+tt.param, nil)
 			w := httptest.NewRecorder()
-			r := chi.NewRouter()
-			r.Get("/", hn.HandleGetURL)
-			r.Get("/{urlHash}", hn.HandleGetURL)
-			r.ServeHTTP(w, request)
+			h := http.HandlerFunc(hn.HandleGetURL)
+			ctx := chi.NewRouteContext()
+			ctx.URLParams.Add("urlHash", tt.param)
+			rctx := context.WithValue(request.Context(), chi.RouteCtxKey, ctx)
+			request = request.WithContext(rctx)
+			h.ServeHTTP(w, request)
+
 			res := w.Result()
 			res.Body.Close()
 

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/T-V-N/gourlshortener/internal/app"
@@ -18,11 +18,5 @@ func main() {
 	router := chi.NewRouter()
 	router.Get("/{urlHash}", h.HandleGetURL)
 	router.Post("/", h.HandlePostURL)
-	err := http.ListenAndServe(":8080", router)
-
-	if err != nil {
-		panic("Server won't start ;( ")
-	}
-
-	fmt.Println("go!")
+	log.Panic(http.ListenAndServe(":8080", router))
 }
