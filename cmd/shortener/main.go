@@ -18,5 +18,6 @@ func main() {
 	router := chi.NewRouter()
 	router.Get("/{urlHash}", h.HandleGetURL)
 	router.Post("/", h.HandlePostURL)
+	router.Post("/api/shorten", h.HandleShortenURL)
 	log.Panic(http.ListenAndServe(":8080", router))
 }

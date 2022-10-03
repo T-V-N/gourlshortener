@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 
@@ -10,6 +11,10 @@ import (
 
 type Handler struct {
 	app *app.App
+}
+
+type URL struct {
+	URL string `json:url`
 }
 
 func InitHandler(a *app.App) *Handler {
@@ -50,6 +55,42 @@ func (h *Handler) HandlePostURL(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 
 	_, err = w.Write([]byte("http://" + r.Host + "/" + hash))
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
+func (h *Handler) HandleShortenURL(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	obj := URL{}
+	if err2 := json.Unmarshal(body, &obj); err2 != nil {
+		http.Error(w, "Error while parsing URL", http.StatusBadRequest)
+		return
+	}
+
+	hash, err := h.app.SaveURL(obj.URL)
+	if err != nil {
+		http.Error(w, "Wrong URL passed", http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("content-type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+
+	shortenedURL := URL{URL: "http://" + r.Host + "/" + hash}
+
+	jsonResBody, err := json.Marshal(shortenedURL)
+	if err != nil {
+		http.Error(w, "Something went wrong", http.StatusBadRequest)
+		return
+	}
+
+	_, err = w.Write(jsonResBody)
 	if err != nil {
 		panic(err.Error())
 	}

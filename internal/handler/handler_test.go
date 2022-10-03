@@ -123,3 +123,60 @@ func Test_HandlerGetURL(t *testing.T) {
 		})
 	}
 }
+
+func Test_HandlerShortenURL(t *testing.T) {
+	type want struct {
+		response   string
+		statusCode int
+	}
+
+	tests := []struct {
+		name string
+		body []byte
+		want want
+	}{
+		{
+			name: "regular link sent",
+			body: []byte("https://youtube.com"),
+			want: want{
+				statusCode: http.StatusCreated,
+				response:   "http://example.com/e62e2446",
+			},
+		},
+		{
+			name: "Wrong URL passed",
+			body: []byte(""),
+			want: want{
+				statusCode: http.StatusBadRequest,
+				response:   "Wrong URL passed\n",
+			},
+		},
+		{
+			name: "Incorrect URL passed",
+			body: []byte("ht_t_p://google.com"),
+			want: want{
+				statusCode: http.StatusBadRequest,
+				response:   "Wrong URL passed\n",
+			},
+		},
+	}
+	st := storage.NewStorage(map[string]string{})
+	a := app.InitApp(st)
+	hn := handler.InitHandler(a)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			request := httptest.NewRequest(http.MethodPost, "/", bytes.NewBuffer(tt.body))
+			request.Header.Set("Host", "localhost:8080")
+			w := httptest.NewRecorder()
+			h := http.HandlerFunc(hn.HandlePostURL)
+			h.ServeHTTP(w, request)
+			res := w.Result()
+			defer res.Body.Close()
+			resBody, _ := io.ReadAll(res.Body)
+
+			assert.Equal(t, tt.want.response, string(resBody))
+			assert.Equal(t, tt.want.statusCode, res.StatusCode)
+		})
+	}
+}
