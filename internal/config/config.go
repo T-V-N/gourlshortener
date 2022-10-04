@@ -1,16 +1,9 @@
-// Package config is responsible for taking the runtime configuration from
-// multiple sources of parameters and providing a structured configuration
-// data to the service at the time of launch. It is also provides sensible
-// defaults.
-//
-// Environment variables are considered the primary source of configuration.
-// It supports the 12-factors app approach.
-// For developers' convenience configuration can be overridden
-// with CLI parameters.
 package config
 
 import (
 	"fmt"
+
+	"flag"
 
 	"github.com/caarlos0/env/v6"
 )
@@ -28,6 +21,10 @@ func Init() (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error: %w", err)
 	}
+
+	flag.StringVar(&cfg.ServerAddress, "a", "Address", "Server address")
+	flag.StringVar(&cfg.ServerURL, "b", "Base url", "base url to use in strings")
+	flag.StringVar(&cfg.FileStoragePath, "f", "File storage path", "where to save db")
 
 	return cfg, nil
 }
