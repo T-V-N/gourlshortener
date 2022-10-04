@@ -58,7 +58,7 @@ func (h *Handler) HandlePostURL(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 
-	_, err = w.Write([]byte("http://" + h.app.Config.ServerURL + "/" + hash))
+	_, err = w.Write([]byte(h.app.Config.ServerURL + "/" + hash))
 	if err != nil {
 		panic(err.Error())
 	}
@@ -86,7 +86,7 @@ func (h *Handler) HandleShortenURL(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
-	shortenedURL := ShortenResult{Result: "http://" + h.app.Config.ServerURL + "/" + hash}
+	shortenedURL := ShortenResult{Result: h.app.Config.ServerURL + "/" + hash}
 
 	jsonResBody, err := json.Marshal(shortenedURL)
 	if err != nil {
