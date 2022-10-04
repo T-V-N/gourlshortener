@@ -10,7 +10,7 @@ import (
 
 type Config struct {
 	ServerURL       string `env:"BASE_URL" envDefault:"example.com"`
-	ServerAddress   string `env:"SERVER_ADDRESS" envDefault:"127.0.0.1:8080"`
+	ServerAddress   string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
 	FileStoragePath string `env:"FILE_STORAGE_PATH" envDefault:"./../../file_storage"`
 }
 
