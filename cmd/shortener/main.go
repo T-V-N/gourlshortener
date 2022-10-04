@@ -28,5 +28,5 @@ func main() {
 	router.Get("/{urlHash}", h.HandleGetURL)
 	router.Post("/", h.HandlePostURL)
 	router.Post("/api/shorten", h.HandleShortenURL)
-	log.Panic(http.ListenAndServe(a.Config.ServerAddress, gziphandler.GzipHandler(router)))
+	log.Panic(http.ListenAndServe(":8080", gziphandler.GzipHandler(router)))
 }
