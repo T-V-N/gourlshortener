@@ -4,10 +4,10 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/NYTimes/gziphandler"
 	"github.com/T-V-N/gourlshortener/internal/app"
 	"github.com/T-V-N/gourlshortener/internal/config"
 	"github.com/T-V-N/gourlshortener/internal/handler"
+	"github.com/T-V-N/gourlshortener/internal/middleware/gzip"
 	"github.com/T-V-N/gourlshortener/internal/storage"
 
 	"github.com/go-chi/chi/v5"
@@ -28,5 +28,5 @@ func main() {
 	router.Get("/{urlHash}", h.HandleGetURL)
 	router.Post("/", h.HandlePostURL)
 	router.Post("/api/shorten", h.HandleShortenURL)
-	log.Panic(http.ListenAndServe(a.Config.ServerAddress, gziphandler.GzipHandler(router)))
+	log.Panic(http.ListenAndServe(a.Config.ServerAddress, gzip.GzipHandle(router)))
 }
