@@ -9,7 +9,7 @@ import (
 )
 
 type Config struct {
-	ServerURL       string `env:"BASE_URL" envDefault:"http://localhost:8080"`
+	BaseURL         string `env:"BASE_URL" envDefault:"http://localhost:8080"`
 	ServerAddress   string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
 	FileStoragePath string `env:"FILE_STORAGE_PATH" envDefault:"./../../file_storage"`
 }
@@ -23,7 +23,7 @@ func Init() (*Config, error) {
 	}
 
 	flag.StringVar(&cfg.ServerAddress, "a", cfg.ServerAddress, "Server address")
-	flag.StringVar(&cfg.ServerURL, "b", cfg.ServerURL, "base url to use in strings")
+	flag.StringVar(&cfg.BaseURL, "b", cfg.BaseURL, "base url to use in strings")
 	flag.StringVar(&cfg.FileStoragePath, "f", cfg.FileStoragePath, "where to save db")
 	flag.Parse()
 
