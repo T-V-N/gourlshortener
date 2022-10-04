@@ -53,8 +53,8 @@ func Test_HandlerPostURL(t *testing.T) {
 			},
 		},
 	}
-	cfg := &config.Config{}
-	st := storage.NewStorage(map[string]string{})
+	cfg, _ := config.Init()
+	st := storage.InitStorage(map[string]string{}, cfg)
 	a := app.InitApp(st, cfg)
 	hn := handler.InitHandler(a)
 
@@ -102,8 +102,8 @@ func Test_HandlerGetURL(t *testing.T) {
 		},
 	}
 
-	cfg := &config.Config{}
-	st := storage.NewStorage(map[string]string{"e62e2446": "https://youtube.com"})
+	cfg, _ := config.Init()
+	st := storage.InitStorage(map[string]string{"e62e2446": "https://youtube.com"}, cfg)
 	a := app.InitApp(st, cfg)
 	hn := handler.InitHandler(a)
 
@@ -163,8 +163,9 @@ func Test_HandlerShortenURL(t *testing.T) {
 			},
 		},
 	}
-	cfg := &config.Config{}
-	st := storage.NewStorage(map[string]string{})
+
+	cfg, _ := config.Init()
+	st := storage.InitStorage(map[string]string{}, cfg)
 	a := app.InitApp(st, cfg)
 	hn := handler.InitHandler(a)
 

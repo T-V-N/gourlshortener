@@ -19,7 +19,7 @@ func main() {
 		return
 	}
 
-	st := storage.NewStorage(map[string]string{})
+	st := storage.InitStorage(map[string]string{}, cfg)
 	a := app.InitApp(st, cfg)
 	h := handler.InitHandler(a)
 

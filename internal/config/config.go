@@ -16,8 +16,9 @@ import (
 )
 
 type Config struct {
-	ServerURL     string `env:"BASE_URL" envDefault:"example.com"`
-	ServerAddress string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
+	ServerURL       string `env:"BASE_URL" envDefault:"example.com"`
+	ServerAddress   string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
+	FileStoragePath string `env:"FILE_STORAGE_PATH" envDefault:"./../../file_storage"`
 }
 
 func Init() (*Config, error) {
