@@ -61,7 +61,6 @@ func Test_HandlerPostURL(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			request := httptest.NewRequest(http.MethodPost, "/", bytes.NewBuffer(tt.body))
-			request.Header.Set("Host", "localhost:8080")
 			w := httptest.NewRecorder()
 			h := http.HandlerFunc(hn.HandlePostURL)
 			h.ServeHTTP(w, request)
@@ -172,7 +171,6 @@ func Test_HandlerShortenURL(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			request := httptest.NewRequest(http.MethodPost, "/", bytes.NewBuffer(tt.body))
-			request.Header.Set("Host", "localhost:8080")
 			w := httptest.NewRecorder()
 			h := http.HandlerFunc(hn.HandlePostURL)
 			h.ServeHTTP(w, request)
