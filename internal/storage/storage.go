@@ -30,7 +30,7 @@ func InitStorage(data map[string]string, cfg *config.Config) *Storage {
 		return &Storage{data, cfg.FileStoragePath}
 	}
 
-	file, err := os.OpenFile(cfg.FileStoragePath+"/db", os.O_RDONLY, 0o777)
+	file, err := os.OpenFile(cfg.FileStoragePath, os.O_RDONLY, 0o777)
 	if err != nil {
 		return &Storage{data, cfg.FileStoragePath}
 	}

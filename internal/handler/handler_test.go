@@ -33,7 +33,7 @@ func Test_HandlerPostURL(t *testing.T) {
 			body: []byte("https://youtube.com"),
 			want: want{
 				statusCode: http.StatusCreated,
-				response:   "http://example.com/e62e2446",
+				response:   "http://localhost:8080/e62e2446",
 			},
 		},
 		{
@@ -143,7 +143,7 @@ func Test_HandlerShortenURL(t *testing.T) {
 			body: []byte("https://youtube.com"),
 			want: want{
 				statusCode: http.StatusCreated,
-				response:   "http://example.com/e62e2446",
+				response:   "http://localhost:8080/e62e2446",
 			},
 		},
 		{
