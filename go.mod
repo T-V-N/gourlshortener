@@ -4,6 +4,8 @@ go 1.19
 
 require github.com/stretchr/testify v1.8.0
 
+require github.com/NYTimes/gziphandler v1.1.1 // indirect
+
 require (
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/davecgh/go-spew v1.1.1 // indirect
