@@ -64,7 +64,7 @@ func (st *Storage) SaveURL(url string) (string, error) {
 	st.db[shortHash] = url
 
 	if st.FileStoragePath != "" {
-		file, err := os.OpenFile(st.FileStoragePath+"/db", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o777)
+		file, err := os.OpenFile(st.FileStoragePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o777)
 		if err != nil {
 			return "", err
 		}
