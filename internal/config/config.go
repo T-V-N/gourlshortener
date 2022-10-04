@@ -29,3 +29,14 @@ func Init() (*Config, error) {
 
 	return cfg, nil
 }
+
+func InitTestConfig() (*Config, error) {
+	cfg := &Config{}
+	err := env.Parse(cfg)
+
+	if err != nil {
+		return nil, fmt.Errorf("error: %w", err)
+	}
+
+	return cfg, nil
+}
