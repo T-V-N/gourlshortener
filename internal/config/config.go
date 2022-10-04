@@ -22,9 +22,9 @@ func Init() (*Config, error) {
 		return nil, fmt.Errorf("error: %w", err)
 	}
 
-	flag.StringVar(&cfg.ServerAddress, "a", "Address", "Server address")
-	flag.StringVar(&cfg.ServerURL, "b", "Base url", "base url to use in strings")
-	flag.StringVar(&cfg.FileStoragePath, "f", "File storage path", "where to save db")
+	flag.StringVar(&cfg.ServerAddress, "a", cfg.ServerAddress, "Server address")
+	flag.StringVar(&cfg.ServerURL, "b", cfg.ServerURL, "base url to use in strings")
+	flag.StringVar(&cfg.FileStoragePath, "f", cfg.FileStoragePath, "where to save db")
 	flag.Parse()
 
 	return cfg, nil
