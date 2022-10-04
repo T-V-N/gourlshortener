@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"log"
 	"os"
 
 	"github.com/T-V-N/gourlshortener/internal/config"
@@ -33,7 +32,7 @@ func InitStorage(data map[string]string, cfg *config.Config) *Storage {
 
 	file, err := os.OpenFile(cfg.FileStoragePath+"/db", os.O_RDONLY, 0o777)
 	if err != nil {
-		log.Panic(err)
+		return &Storage{data, cfg.FileStoragePath}
 	}
 
 	scanner := bufio.NewScanner(file)
