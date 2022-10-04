@@ -4,15 +4,17 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/T-V-N/gourlshortener/internal/config"
 	"github.com/T-V-N/gourlshortener/internal/storage"
 )
 
 type App struct {
-	db *storage.Storage
+	db     *storage.Storage
+	Config *config.Config
 }
 
-func InitApp(st *storage.Storage) *App {
-	return &App{st}
+func InitApp(st *storage.Storage, cfg *config.Config) *App {
+	return &App{st, cfg}
 }
 
 func (app *App) SaveURL(rawURL string) (string, error) {
