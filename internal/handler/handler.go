@@ -14,7 +14,11 @@ type Handler struct {
 }
 
 type URL struct {
-	URL string `json:url`
+	URL string `json:"url"`
+}
+
+type ShortenResult struct {
+	Result string `json:"result"`
 }
 
 func InitHandler(a *app.App) *Handler {
@@ -82,7 +86,7 @@ func (h *Handler) HandleShortenURL(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
-	shortenedURL := URL{URL: "http://" + r.Host + "/" + hash}
+	shortenedURL := ShortenResult{Result: "http://" + r.Host + "/" + hash}
 
 	jsonResBody, err := json.Marshal(shortenedURL)
 	if err != nil {
