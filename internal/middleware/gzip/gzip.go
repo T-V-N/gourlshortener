@@ -19,9 +19,6 @@ func GzipHandle(next http.Handler) http.Handler {
 			defer gz.Close()
 
 			r.Body = gz
-
-			next.ServeHTTP(w, r)
-			return
 		}
 
 		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {

@@ -166,8 +166,8 @@ func Test_HandlerShortenURL(t *testing.T) {
 
 	cfg, _ := config.Init()
 	st := storage.InitStorage(map[string]string{}, cfg)
-	a := app.InitApp(st, cfg)
-	hn := handler.InitHandler(a)
+	app := app.InitApp(st, cfg)
+	hn := handler.InitHandler(app)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
