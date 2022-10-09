@@ -13,19 +13,20 @@ import (
 )
 
 type URL struct {
-	Hash string `json:"hash"`
-	URL  string `json:"url"`
+	UID  string `json:"uid"`
+	Hash string `json:"short_url"`
+	URL  string `json:"original_url"`
 }
 
 type Storage struct {
-	db              map[string]string
+	db              map[string]URL
 	FileStoragePath string
 }
 
-func InitStorage(data map[string]string, cfg *config.Config) *Storage {
+func InitStorage(data map[string]URL, cfg *config.Config) *Storage {
 	if cfg.FileStoragePath == "" {
 		if data == nil {
-			return &Storage{make(map[string]string), cfg.FileStoragePath}
+			return &Storage{make(map[string]URL), cfg.FileStoragePath}
 		}
 
 		return &Storage{data, cfg.FileStoragePath}
@@ -44,7 +45,8 @@ func InitStorage(data map[string]string, cfg *config.Config) *Storage {
 			break
 		}
 
-		data[url.Hash] = url.URL
+		data[url.Hash] = url
+
 	}
 
 	defer file.Close()
@@ -52,10 +54,11 @@ func InitStorage(data map[string]string, cfg *config.Config) *Storage {
 	return &Storage{data, cfg.FileStoragePath}
 }
 
-func (st *Storage) SaveURL(url string) (string, error) {
+func (st *Storage) SaveURL(url, UID string) (string, error) {
 	hash := md5.Sum([]byte(url))
 	shortHash := hex.EncodeToString(hash[:4])
-	st.db[shortHash] = url
+
+	st.db[shortHash] = URL{UID, shortHash, url}
 
 	if st.FileStoragePath != "" {
 		file, err := os.OpenFile(st.FileStoragePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o777)
@@ -63,7 +66,7 @@ func (st *Storage) SaveURL(url string) (string, error) {
 			return "", err
 		}
 
-		data, err := json.Marshal(&URL{shortHash, url})
+		data, err := json.Marshal(&URL{UID, shortHash, url})
 		if err != nil {
 			return "", err
 		}
@@ -86,5 +89,16 @@ func (st *Storage) GetURL(hash string) (string, error) {
 		return hash, errors.New("an URL with this hash doesn't exist")
 	}
 
-	return url, nil
+	return url.UID, nil
+}
+
+func (st *Storage) GetUrlsByUID(uid string) ([]URL, error) {
+	result := []URL{}
+	for _, url := range st.db {
+		if url.UID == uid {
+			result = append(result, url)
+		}
+	}
+
+	return result, nil
 }

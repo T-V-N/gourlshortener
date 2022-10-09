@@ -7,7 +7,9 @@ import (
 	"github.com/T-V-N/gourlshortener/internal/app"
 	"github.com/T-V-N/gourlshortener/internal/config"
 	"github.com/T-V-N/gourlshortener/internal/handler"
+	"github.com/T-V-N/gourlshortener/internal/middleware/auth"
 	"github.com/T-V-N/gourlshortener/internal/middleware/gzip"
+
 	"github.com/T-V-N/gourlshortener/internal/storage"
 
 	"github.com/go-chi/chi/v5"
@@ -19,15 +21,18 @@ func main() {
 		log.Panic("error: %w", err)
 	}
 
-	st := storage.InitStorage(map[string]string{}, cfg)
+	st := storage.InitStorage(map[string]storage.URL{}, cfg)
 	a := app.InitApp(st, cfg)
 	h := handler.InitHandler(a)
+	authMw := auth.InitAuth(cfg)
 
 	router := chi.NewRouter()
 	router.Use(gzip.GzipHandle)
+	router.Use(authMw)
 
 	router.Get("/{urlHash}", h.HandleGetURL)
 	router.Post("/", h.HandlePostURL)
 	router.Post("/api/shorten", h.HandleShortenURL)
+	router.Post("/api/users/urls", h.HandleListURL)
 	log.Panic(http.ListenAndServe(a.Config.ServerAddress, router))
 }

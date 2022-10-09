@@ -31,7 +31,7 @@ func InitTestConfig() (*config.Config, error) {
 
 func Test_GzipHandle(t *testing.T) {
 	cfg, _ := InitTestConfig()
-	st := storage.InitStorage(map[string]string{}, cfg)
+	st := storage.InitStorage(map[string]storage.URL{}, cfg)
 	a := app.InitApp(st, cfg)
 	hn := handler.InitHandler(a)
 
