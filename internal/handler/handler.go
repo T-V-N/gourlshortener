@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"log"
@@ -73,7 +74,7 @@ func (h *Handler) HandleShortenURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	obj := URL{}
-	if err2 := json.Unmarshal(body, &obj); err2 != nil {
+	if err := json.NewDecoder(bytes.NewBuffer(body)).Decode(&obj); err != nil {
 		http.Error(w, "Error while parsing URL", http.StatusBadRequest)
 		return
 	}

@@ -2,6 +2,7 @@ package storage
 
 import (
 	"bufio"
+	"bytes"
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
@@ -38,11 +39,8 @@ func InitStorage(data map[string]string, cfg *config.Config) *Storage {
 	scanner := bufio.NewScanner(file)
 
 	for scanner.Scan() {
-		lineBytes := scanner.Bytes()
 		url := URL{}
-		err = json.Unmarshal(lineBytes, &url)
-
-		if err != nil {
+		if err := json.NewDecoder(bytes.NewBuffer(scanner.Bytes())).Decode(&url); err != nil {
 			break
 		}
 

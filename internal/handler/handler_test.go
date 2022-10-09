@@ -74,8 +74,8 @@ func Test_HandlerPostURL(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			request := httptest.NewRequest(http.MethodPost, "/", bytes.NewBuffer(tt.body))
 			w := httptest.NewRecorder()
-			h := http.HandlerFunc(hn.HandlePostURL)
-			h.ServeHTTP(w, request)
+			hn.HandlePostURL(w, request)
+
 			resBody := w.Body.Bytes()
 
 			assert.Equal(t, tt.want.response, string(resBody))
@@ -122,12 +122,11 @@ func Test_HandlerGetURL(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			request := httptest.NewRequest(http.MethodGet, "/"+tt.param, nil)
 			w := httptest.NewRecorder()
-			h := http.HandlerFunc(hn.HandleGetURL)
 			ctx := chi.NewRouteContext()
 			ctx.URLParams.Add("urlHash", tt.param)
 			rctx := context.WithValue(request.Context(), chi.RouteCtxKey, ctx)
 			request = request.WithContext(rctx)
-			h.ServeHTTP(w, request)
+			hn.HandleGetURL(w, request)
 
 			res := w.Result()
 			res.Body.Close()
@@ -184,8 +183,7 @@ func Test_HandlerShortenURL(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			request := httptest.NewRequest(http.MethodPost, "/", bytes.NewBuffer(tt.body))
 			w := httptest.NewRecorder()
-			h := http.HandlerFunc(hn.HandlePostURL)
-			h.ServeHTTP(w, request)
+			hn.HandlePostURL(w, request)
 			resBody := w.Body.Bytes()
 
 			assert.Equal(t, tt.want.response, string(resBody))
