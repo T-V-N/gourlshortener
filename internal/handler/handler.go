@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 
 	"github.com/T-V-N/gourlshortener/internal/app"
@@ -60,7 +61,7 @@ func (h *Handler) HandlePostURL(w http.ResponseWriter, r *http.Request) {
 
 	_, err = w.Write([]byte(h.app.Config.BaseURL + "/" + hash))
 	if err != nil {
-		panic(err.Error())
+		log.Println(err.Error())
 	}
 }
 
@@ -96,6 +97,6 @@ func (h *Handler) HandleShortenURL(w http.ResponseWriter, r *http.Request) {
 
 	_, err = w.Write(jsonResBody)
 	if err != nil {
-		panic(err.Error())
+		log.Println(err.Error())
 	}
 }

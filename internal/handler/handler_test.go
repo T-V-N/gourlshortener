@@ -3,7 +3,7 @@ package handler_test
 import (
 	"bytes"
 	"context"
-	"io"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,10 +12,22 @@ import (
 	"github.com/T-V-N/gourlshortener/internal/config"
 	"github.com/T-V-N/gourlshortener/internal/handler"
 	"github.com/T-V-N/gourlshortener/internal/storage"
+	"github.com/caarlos0/env/v6"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 )
+
+func InitTestConfig() (*config.Config, error) {
+	cfg := &config.Config{}
+	err := env.Parse(cfg)
+
+	if err != nil {
+		return nil, fmt.Errorf("error: %w", err)
+	}
+
+	return cfg, nil
+}
 
 func Test_HandlerPostURL(t *testing.T) {
 	type want struct {
@@ -53,7 +65,7 @@ func Test_HandlerPostURL(t *testing.T) {
 			},
 		},
 	}
-	cfg, _ := config.InitTestConfig()
+	cfg, _ := InitTestConfig()
 	st := storage.InitStorage(map[string]string{}, cfg)
 	a := app.InitApp(st, cfg)
 	hn := handler.InitHandler(a)
@@ -64,12 +76,10 @@ func Test_HandlerPostURL(t *testing.T) {
 			w := httptest.NewRecorder()
 			h := http.HandlerFunc(hn.HandlePostURL)
 			h.ServeHTTP(w, request)
-			res := w.Result()
-			defer res.Body.Close()
-			resBody, _ := io.ReadAll(res.Body)
+			resBody := w.Body.Bytes()
 
 			assert.Equal(t, tt.want.response, string(resBody))
-			assert.Equal(t, tt.want.statusCode, res.StatusCode)
+			assert.Equal(t, tt.want.statusCode, w.Code)
 		})
 	}
 }
@@ -103,7 +113,7 @@ func Test_HandlerGetURL(t *testing.T) {
 		},
 	}
 
-	cfg, _ := config.InitTestConfig()
+	cfg, _ := InitTestConfig()
 	st := storage.InitStorage(map[string]string{"e62e2446": "https://youtube.com"}, cfg)
 	a := app.InitApp(st, cfg)
 	hn := handler.InitHandler(a)
@@ -165,7 +175,7 @@ func Test_HandlerShortenURL(t *testing.T) {
 		},
 	}
 
-	cfg, _ := config.InitTestConfig()
+	cfg, _ := InitTestConfig()
 	st := storage.InitStorage(map[string]string{}, cfg)
 	app := app.InitApp(st, cfg)
 	hn := handler.InitHandler(app)
@@ -176,12 +186,10 @@ func Test_HandlerShortenURL(t *testing.T) {
 			w := httptest.NewRecorder()
 			h := http.HandlerFunc(hn.HandlePostURL)
 			h.ServeHTTP(w, request)
-			res := w.Result()
-			defer res.Body.Close()
-			resBody, _ := io.ReadAll(res.Body)
+			resBody := w.Body.Bytes()
 
 			assert.Equal(t, tt.want.response, string(resBody))
-			assert.Equal(t, tt.want.statusCode, res.StatusCode)
+			assert.Equal(t, tt.want.statusCode, w.Code)
 		})
 	}
 }

@@ -37,11 +37,7 @@ func InitStorage(data map[string]string, cfg *config.Config) *Storage {
 
 	scanner := bufio.NewScanner(file)
 
-	for {
-		if !scanner.Scan() {
-			break
-		}
-
+	for scanner.Scan() {
 		lineBytes := scanner.Bytes()
 		url := URL{}
 		err = json.Unmarshal(lineBytes, &url)

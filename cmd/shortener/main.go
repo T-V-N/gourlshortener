@@ -17,7 +17,6 @@ func main() {
 	cfg, err := config.Init()
 	if err != nil {
 		log.Panic("error: %w", err)
-		return
 	}
 
 	st := storage.InitStorage(map[string]string{}, cfg)
@@ -25,8 +24,10 @@ func main() {
 	h := handler.InitHandler(a)
 
 	router := chi.NewRouter()
+	router.Use(gzip.GzipHandle)
+
 	router.Get("/{urlHash}", h.HandleGetURL)
 	router.Post("/", h.HandlePostURL)
 	router.Post("/api/shorten", h.HandleShortenURL)
-	log.Panic(http.ListenAndServe(a.Config.ServerAddress, gzip.GzipHandle(router)))
+	log.Panic(http.ListenAndServe(a.Config.ServerAddress, router))
 }

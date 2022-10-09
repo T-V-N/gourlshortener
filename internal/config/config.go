@@ -11,7 +11,7 @@ import (
 type Config struct {
 	BaseURL         string `env:"BASE_URL" envDefault:"http://localhost:8080"`
 	ServerAddress   string `env:"SERVER_ADDRESS" envDefault:":8080"`
-	FileStoragePath string `env:"FILE_STORAGE_PATH"`
+	FileStoragePath string `env:"FILE_STORAGE_PATH" envDefault:"../../file_storage/db"`
 }
 
 func Init() (*Config, error) {
@@ -26,17 +26,6 @@ func Init() (*Config, error) {
 	flag.StringVar(&cfg.BaseURL, "b", cfg.BaseURL, "base url to use in strings")
 	flag.StringVar(&cfg.FileStoragePath, "f", cfg.FileStoragePath, "where to save db")
 	flag.Parse()
-
-	return cfg, nil
-}
-
-func InitTestConfig() (*Config, error) {
-	cfg := &Config{}
-	err := env.Parse(cfg)
-
-	if err != nil {
-		return nil, fmt.Errorf("error: %w", err)
-	}
 
 	return cfg, nil
 }

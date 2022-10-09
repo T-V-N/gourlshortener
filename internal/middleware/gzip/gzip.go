@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/NYTimes/gziphandler"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 func GzipHandle(next http.Handler) http.Handler {
@@ -26,8 +26,8 @@ func GzipHandle(next http.Handler) http.Handler {
 			return
 		}
 
-		withGzNext := gziphandler.GzipHandler(next)
+		withGzNext := middleware.Compress(5)
 
-		withGzNext.ServeHTTP(w, r)
+		withGzNext(next).ServeHTTP(w, r)
 	})
 }
