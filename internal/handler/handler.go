@@ -49,7 +49,6 @@ func (h *Handler) HandlePostURL(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 
 	uid := r.Header.Get("uid")
-	log.Println(uid)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
