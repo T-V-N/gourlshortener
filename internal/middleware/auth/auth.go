@@ -48,7 +48,7 @@ func generateCookie(key string) (c *http.Cookie, err error) {
 	cookieVal := append(signature, uid...)
 
 	return &http.Cookie{
-		Name:   "auth_token",
+		Name:   "Authorization",
 		Value:  hex.EncodeToString(cookieVal),
 		MaxAge: 300,
 	}, nil
