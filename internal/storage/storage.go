@@ -89,7 +89,7 @@ func (st *Storage) GetURL(hash string) (string, error) {
 		return hash, errors.New("an URL with this hash doesn't exist")
 	}
 
-	return url.UID, nil
+	return url.URL, nil
 }
 
 func (st *Storage) GetUrlsByUID(uid string) ([]URL, error) {
