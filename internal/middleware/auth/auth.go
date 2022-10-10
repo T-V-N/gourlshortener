@@ -48,9 +48,8 @@ func generateCookie(key string) (c *http.Cookie, err error) {
 	cookieVal := append(signature, uid...)
 
 	return &http.Cookie{
-		Name:   "Authorization",
-		Value:  hex.EncodeToString(cookieVal),
-		MaxAge: 300,
+		Name:  "Authorization",
+		Value: hex.EncodeToString(cookieVal),
 	}, nil
 
 }
@@ -58,7 +57,7 @@ func generateCookie(key string) (c *http.Cookie, err error) {
 func InitAuth(cfg *config.Config) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			cookie, err := r.Cookie("auth_token")
+			cookie, err := r.Cookie("Authorization")
 			if err != nil {
 				log.Println("no cookie set, creating a new one")
 			}
