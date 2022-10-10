@@ -13,7 +13,7 @@ import (
 )
 
 type URL struct {
-	UID  string `json:"uid"`
+	UID  string `json:"-"`
 	Hash string `json:"short_url"`
 	URL  string `json:"original_url"`
 }
@@ -89,7 +89,7 @@ func (st *Storage) GetURL(hash string) (string, error) {
 		return hash, errors.New("an URL with this hash doesn't exist")
 	}
 
-	return url.URL, nil
+	return url.UID, nil
 }
 
 func (st *Storage) GetUrlsByUID(uid string) ([]URL, error) {
