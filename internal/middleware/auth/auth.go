@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
-	"log"
 	"net/http"
 
 	"github.com/T-V-N/gourlshortener/internal/config"
@@ -59,10 +58,9 @@ func InitAuth(cfg *config.Config) func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			cookie, err := r.Cookie("auth_token")
 			if err != nil {
-				log.Println("no cookie set, creating a new one")
 				newCookie, err := generateCookie(cfg.SecretKey)
 
-				uid := newCookie.Value[:32]
+				uid := newCookie.Value[32:]
 				r.Header.Set("uid", uid)
 
 				if err != nil {
@@ -71,7 +69,6 @@ func InitAuth(cfg *config.Config) func(next http.Handler) http.Handler {
 				}
 
 				http.SetCookie(w, newCookie)
-
 				next.ServeHTTP(w, r)
 				return
 			}
@@ -88,7 +85,7 @@ func InitAuth(cfg *config.Config) func(next http.Handler) http.Handler {
 			} else {
 				newCookie, err := generateCookie(cfg.SecretKey)
 
-				uid := newCookie.Value[:32]
+				uid := newCookie.Value[32:]
 				r.Header.Set("uid", uid)
 				if err != nil {
 					http.Error(w, "Something went wrong", http.StatusBadRequest)
