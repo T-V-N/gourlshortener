@@ -7,9 +7,9 @@ import (
 	"github.com/T-V-N/gourlshortener/internal/app"
 	"github.com/T-V-N/gourlshortener/internal/config"
 	"github.com/T-V-N/gourlshortener/internal/handler"
+	"github.com/T-V-N/gourlshortener/internal/middleware/gzip"
 	"github.com/T-V-N/gourlshortener/internal/storage"
 
-	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -24,7 +24,7 @@ func main() {
 	h := handler.InitHandler(a)
 
 	router := chi.NewRouter()
-	router.Use(middleware.Compress(5))
+	router.Use(gzip.GzipHandle)
 
 	router.Get("/{urlHash}", h.HandleGetURL)
 	router.Post("/", h.HandlePostURL)
