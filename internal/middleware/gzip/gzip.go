@@ -5,8 +5,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-
-	"github.com/go-chi/chi/v5/middleware"
 )
 
 type Gzip struct {
@@ -33,8 +31,6 @@ func GzipHandle(next http.Handler) http.Handler {
 			r.Body = &gz.GzipReader
 		}
 
-		withGzNext := middleware.Compress(5)
-
-		withGzNext(next).ServeHTTP(w, r)
+		next.ServeHTTP(w, r)
 	})
 }
