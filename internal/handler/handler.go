@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"bytes"
 	"encoding/json"
 	"io"
 	"log"
@@ -67,14 +66,8 @@ func (h *Handler) HandlePostURL(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) HandleShortenURL(w http.ResponseWriter, r *http.Request) {
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
 	obj := URL{}
-	if err := json.NewDecoder(bytes.NewBuffer(body)).Decode(&obj); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&obj); err != nil {
 		http.Error(w, "Error while parsing URL", http.StatusBadRequest)
 		return
 	}
@@ -90,14 +83,9 @@ func (h *Handler) HandleShortenURL(w http.ResponseWriter, r *http.Request) {
 
 	shortenedURL := ShortenResult{Result: h.app.Config.BaseURL + "/" + hash}
 
-	jsonResBody, err := json.Marshal(shortenedURL)
+	err = json.NewEncoder(w).Encode(shortenedURL)
 	if err != nil {
 		http.Error(w, "Something went wrong", http.StatusBadRequest)
 		return
-	}
-
-	_, err = w.Write(jsonResBody)
-	if err != nil {
-		log.Println(err.Error())
 	}
 }
