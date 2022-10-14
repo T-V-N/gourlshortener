@@ -48,7 +48,7 @@ func generateCookie(key string) (c *http.Cookie, err error) {
 	cookieVal := append(signature, uid...)
 
 	return &http.Cookie{
-		Name:  "Authorization",
+		Name:  "auth_token",
 		Value: hex.EncodeToString(cookieVal),
 	}, nil
 
@@ -57,31 +57,42 @@ func generateCookie(key string) (c *http.Cookie, err error) {
 func InitAuth(cfg *config.Config) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			cookie, err := r.Cookie("Authorization")
+			cookie, err := r.Cookie("auth_token")
 			if err != nil {
 				log.Println("no cookie set, creating a new one")
-			}
-
-			if cookie != nil {
-				valid, err := isValidCookie(cookie, cfg.SecretKey)
-				if err != nil {
-					http.Error(w, "Can't validate the token", http.StatusBadRequest)
-				}
-
-				if valid {
-					hexValue, _ := hex.DecodeString(cookie.Value)
-					r.Header.Set("uid", hex.EncodeToString(hexValue[32:]))
-				} else {
-					newCookie, err := generateCookie(cfg.SecretKey)
-					if err != nil {
-						http.Error(w, "Something went wrong", http.StatusBadRequest)
-					}
-					http.SetCookie(w, newCookie)
-				}
-			} else {
 				newCookie, err := generateCookie(cfg.SecretKey)
+
+				uid := newCookie.Value[:32]
+				r.Header.Set("uid", uid)
+
 				if err != nil {
 					http.Error(w, "Something went wrong", http.StatusBadRequest)
+					return
+				}
+
+				http.SetCookie(w, newCookie)
+
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			valid, err := isValidCookie(cookie, cfg.SecretKey)
+			if err != nil {
+				http.Error(w, "Can't validate the token", http.StatusBadRequest)
+				return
+			}
+
+			if valid {
+				hexValue, _ := hex.DecodeString(cookie.Value)
+				r.Header.Set("uid", hex.EncodeToString(hexValue[32:]))
+			} else {
+				newCookie, err := generateCookie(cfg.SecretKey)
+
+				uid := newCookie.Value[:32]
+				r.Header.Set("uid", uid)
+				if err != nil {
+					http.Error(w, "Something went wrong", http.StatusBadRequest)
+					return
 				}
 				http.SetCookie(w, newCookie)
 			}
