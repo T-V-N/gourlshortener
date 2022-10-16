@@ -60,14 +60,13 @@ func InitAuth(cfg *config.Config) func(next http.Handler) http.Handler {
 			cookie, err := r.Cookie("auth_token")
 			if err != nil {
 				newCookie, err := generateCookie(cfg.SecretKey)
-
-				uid := newCookie.Value[32:]
-				r.Header.Set("uid", uid)
-
 				if err != nil {
 					http.Error(w, "Something went wrong", http.StatusBadRequest)
 					return
 				}
+
+				uid := newCookie.Value[32:]
+				r.Header.Set("uid", uid)
 
 				http.SetCookie(w, newCookie)
 				next.ServeHTTP(w, r)
@@ -85,13 +84,13 @@ func InitAuth(cfg *config.Config) func(next http.Handler) http.Handler {
 				r.Header.Set("uid", hexValue[32:])
 			} else {
 				newCookie, err := generateCookie(cfg.SecretKey)
-
-				uid := newCookie.Value[32:]
-				r.Header.Set("uid", uid)
 				if err != nil {
 					http.Error(w, "Something went wrong", http.StatusBadRequest)
 					return
 				}
+
+				uid := newCookie.Value[32:]
+				r.Header.Set("uid", uid)
 				http.SetCookie(w, newCookie)
 			}
 

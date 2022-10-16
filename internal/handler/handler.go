@@ -111,15 +111,8 @@ func (h *Handler) HandleListURL(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("content-type", "application/json")
 
-	jsonResBody, err := json.Marshal(url)
-
-	if err != nil {
+	if err != json.NewEncoder(w).Encode(url) {
 		http.Error(w, "Something went wrong", http.StatusBadRequest)
 		return
-	}
-
-	_, err = w.Write(jsonResBody)
-	if err != nil {
-		log.Println(err.Error())
 	}
 }
