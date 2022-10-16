@@ -49,6 +49,7 @@ func generateCookie(key string) (c *http.Cookie, err error) {
 	return &http.Cookie{
 		Name:  "auth_token",
 		Value: hex.EncodeToString(cookieVal),
+		Path:  "/",
 	}, nil
 
 }
