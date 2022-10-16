@@ -80,8 +80,8 @@ func InitAuth(cfg *config.Config) func(next http.Handler) http.Handler {
 			}
 
 			if valid {
-				hexValue, _ := hex.DecodeString(cookie.Value)
-				r.Header.Set("uid", hex.EncodeToString(hexValue[32:]))
+				hexValue := cookie.Value
+				r.Header.Set("uid", hexValue[32:])
 			} else {
 				newCookie, err := generateCookie(cfg.SecretKey)
 
