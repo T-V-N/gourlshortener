@@ -114,7 +114,7 @@ func Test_HandlerGetURL(t *testing.T) {
 	}
 
 	cfg, _ := InitTestConfig()
-	st := storage.InitStorage(map[string]storage.URL{"e62e2446": {UID: "", Hash: "e62e2446", URL: "https://youtube.com"}}, cfg)
+	st := storage.InitStorage(map[string]storage.URL{"e62e2446": {UID: "", ShortURL: "e62e2446", URL: "https://youtube.com"}}, cfg)
 	a := app.InitApp(st, cfg)
 	hn := handler.InitHandler(a)
 

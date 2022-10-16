@@ -13,9 +13,9 @@ import (
 )
 
 type URL struct {
-	UID  string `json:"-"`
-	Hash string `json:"short_url"`
-	URL  string `json:"original_url"`
+	UID      string `json:"-"`
+	ShortURL string `json:"short_url"`
+	URL      string `json:"original_url"`
 }
 
 type Storage struct {
@@ -45,7 +45,7 @@ func InitStorage(data map[string]URL, cfg *config.Config) *Storage {
 			break
 		}
 
-		data[url.Hash] = url
+		data[url.ShortURL] = url
 
 	}
 
@@ -56,9 +56,9 @@ func InitStorage(data map[string]URL, cfg *config.Config) *Storage {
 
 func (st *Storage) SaveURL(url, UID string) (string, error) {
 	hash := md5.Sum([]byte(url))
-	shortHash := st.cfg.BaseURL + "/" + hex.EncodeToString(hash[:4])
+	ShortURL := st.cfg.BaseURL + "/" + hex.EncodeToString(hash[:4])
 
-	st.db[shortHash] = URL{UID, shortHash, url}
+	st.db[hex.EncodeToString(hash[:4])] = URL{UID, ShortURL, url}
 
 	if st.cfg.FileStoragePath != "" {
 		file, err := os.OpenFile(st.cfg.FileStoragePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o777)
@@ -66,7 +66,7 @@ func (st *Storage) SaveURL(url, UID string) (string, error) {
 			return "", err
 		}
 
-		data, err := json.Marshal(&URL{UID, shortHash, url})
+		data, err := json.Marshal(&URL{UID, ShortURL, url})
 		if err != nil {
 			return "", err
 		}
@@ -77,10 +77,10 @@ func (st *Storage) SaveURL(url, UID string) (string, error) {
 
 		defer file.Close()
 
-		return shortHash, err
+		return ShortURL, err
 	}
 
-	return shortHash, nil
+	return ShortURL, nil
 }
 
 func (st *Storage) GetURL(hash string) (string, error) {
