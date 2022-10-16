@@ -19,22 +19,22 @@ type URL struct {
 }
 
 type Storage struct {
-	db              map[string]URL
-	FileStoragePath string
+	db  map[string]URL
+	cfg config.Config
 }
 
 func InitStorage(data map[string]URL, cfg *config.Config) *Storage {
 	if cfg.FileStoragePath == "" {
 		if data == nil {
-			return &Storage{make(map[string]URL), cfg.FileStoragePath}
+			return &Storage{make(map[string]URL), *cfg}
 		}
 
-		return &Storage{data, cfg.FileStoragePath}
+		return &Storage{data, *cfg}
 	}
 
 	file, err := os.OpenFile(cfg.FileStoragePath, os.O_RDONLY, 0o777)
 	if err != nil {
-		return &Storage{data, cfg.FileStoragePath}
+		return &Storage{data, *cfg}
 	}
 
 	scanner := bufio.NewScanner(file)
@@ -51,17 +51,17 @@ func InitStorage(data map[string]URL, cfg *config.Config) *Storage {
 
 	defer file.Close()
 
-	return &Storage{data, cfg.FileStoragePath}
+	return &Storage{data, *cfg}
 }
 
 func (st *Storage) SaveURL(url, UID string) (string, error) {
 	hash := md5.Sum([]byte(url))
-	shortHash := hex.EncodeToString(hash[:4])
+	shortHash := st.cfg.BaseURL + "/" + hex.EncodeToString(hash[:4])
 
 	st.db[shortHash] = URL{UID, shortHash, url}
 
-	if st.FileStoragePath != "" {
-		file, err := os.OpenFile(st.FileStoragePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o777)
+	if st.cfg.FileStoragePath != "" {
+		file, err := os.OpenFile(st.cfg.FileStoragePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o777)
 		if err != nil {
 			return "", err
 		}
