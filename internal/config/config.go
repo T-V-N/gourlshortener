@@ -27,7 +27,8 @@ func Init() (*Config, error) {
 	flag.StringVar(&cfg.ServerAddress, "a", cfg.ServerAddress, "Server address")
 	flag.StringVar(&cfg.BaseURL, "b", cfg.BaseURL, "base url to use in strings")
 	flag.StringVar(&cfg.FileStoragePath, "f", cfg.FileStoragePath, "where to save db")
-	flag.StringVar(&cfg.FileStoragePath, "s", cfg.FileStoragePath, "secret key")
+	flag.StringVar(&cfg.SecretKey, "s", cfg.SecretKey, "secret key")
+	flag.StringVar(&cfg.DatabaseDSN, "d", cfg.DatabaseDSN, "secret key")
 	flag.Parse()
 
 	return cfg, nil
