@@ -2,8 +2,9 @@ package app
 
 import (
 	"context"
+	"crypto/md5"
+	"encoding/hex"
 	"net/url"
-	"strings"
 
 	"github.com/T-V-N/gourlshortener/internal/config"
 	"github.com/T-V-N/gourlshortener/internal/storage"
@@ -24,13 +25,15 @@ func (app *App) SaveURL(rawURL, UID string, ctx context.Context) (string, error)
 		return rawURL, err
 	}
 
-	hash, err := app.db.SaveURL(ctx, strings.ToLower(u.String()), UID)
+	hash := md5.Sum([]byte(u.String()))
+	stringHash := hex.EncodeToString(hash[:4])
+	err = app.db.SaveURL(ctx, u.String(), UID, stringHash)
 
 	if err != nil {
 		return u.String(), err
 	}
 
-	return hash, nil
+	return app.Config.BaseURL + "/" + stringHash, nil
 }
 
 func (app *App) GetURL(id string, ctx context.Context) (string, error) {
@@ -45,6 +48,10 @@ func (app *App) GetURL(id string, ctx context.Context) (string, error) {
 
 func (app *App) GetURLByUID(uid string, ctx context.Context) ([]storage.URL, error) {
 	u, err := app.db.GetUrlsByUID(ctx, uid)
+
+	for i, el := range u {
+		u[i].ShortURL = app.Config.BaseURL + "/" + el.ShortURL
+	}
 
 	if err != nil {
 		return []storage.URL{}, err

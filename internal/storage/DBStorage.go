@@ -36,20 +36,89 @@ func InitDBStorage(cfg *config.Config) (*DBStorage, error) {
 	return &DBStorage{conn, *cfg}, nil
 }
 
-func (db *DBStorage) SaveURL(ctx context.Context, url, uid string) (string, error) {
-	return "aa", nil
+func (db *DBStorage) SaveURL(ctx context.Context, url, uid, hash string) error {
+	conn, err := pgx.Connect(ctx, db.cfg.DatabaseDSN)
+	if err != nil {
+		log.Printf("Unable to connect to database: %v\n", err.Error())
+		return err
+	}
+
+	defer conn.Close(ctx)
+
+	sqlStatement := `
+	INSERT INTO urls (uid, hash, original_url)
+	VALUES ($1, $2, $3)`
+
+	_, err = conn.Exec(ctx, sqlStatement, uid, hash, url)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (db *DBStorage) GetURL(ctx context.Context, hash string) (string, error) {
-	return "aa", nil
+	conn, err := pgx.Connect(ctx, db.cfg.DatabaseDSN)
+	if err != nil {
+		log.Printf("Unable to connect to database: %v\n", err.Error())
+		return "", err
+	}
+
+	defer conn.Close(ctx)
+
+	row := conn.QueryRow(ctx, "Select original_url from urls where hash = $1", hash)
+
+	var original_url string
+	err = row.Scan(&original_url)
+
+	if err != nil {
+		return "", err
+	}
+
+	return original_url, nil
 }
 
 func (db *DBStorage) GetUrlsByUID(ctx context.Context, uid string) ([]URL, error) {
-	return []URL{URL{"aaa", "aaa", "a"}}, nil
+	urls := make([]URL, 0)
+	conn, err := pgx.Connect(ctx, db.cfg.DatabaseDSN)
+	if err != nil {
+		log.Printf("Unable to connect to database: %v\n", err.Error())
+		return urls, err
+	}
+
+	rows, err := conn.Query(ctx, "SELECT hash, original_url from urls where uid = $1", uid)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	// пробегаем по всем записям
+	for rows.Next() {
+		var u URL
+		err = rows.Scan(&u.ShortURL, &u.URL)
+
+		if err != nil {
+			return nil, err
+		}
+
+		urls = append(urls, u)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return urls, nil
 }
 
 func (db *DBStorage) IsAlive(ctx context.Context) (bool, error) {
-	err := db.conn.Ping(ctx)
+	conn, err := pgx.Connect(ctx, db.cfg.DatabaseDSN)
+
+	defer conn.Close(ctx)
+
 	if err != nil {
 		return false, err
 	}

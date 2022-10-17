@@ -13,7 +13,7 @@ type URL struct {
 }
 
 type Storage interface {
-	SaveURL(ctx context.Context, url, uid string) (string, error)
+	SaveURL(ctx context.Context, url, uid, hash string) error
 	GetURL(ctx context.Context, hash string) (string, error)
 	GetUrlsByUID(ctx context.Context, uid string) ([]URL, error)
 	IsAlive(ctx context.Context) (bool, error)
