@@ -13,6 +13,7 @@ type Config struct {
 	ServerAddress   string `env:"SERVER_ADDRESS" envDefault:":8080"`
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`
 	SecretKey       string `env:"SECRET_KEY" envDefault:"hello"`
+	DatabaseDSN     string `env:"DATABASE_DSN"`
 }
 
 func Init() (*Config, error) {

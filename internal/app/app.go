@@ -9,11 +9,11 @@ import (
 )
 
 type App struct {
-	db     *storage.Storage
+	db     storage.Storage
 	Config *config.Config
 }
 
-func InitApp(st *storage.Storage, cfg *config.Config) *App {
+func InitApp(st storage.Storage, cfg *config.Config) *App {
 	return &App{st, cfg}
 }
 
@@ -41,6 +41,7 @@ func (app *App) GetURL(id string) (string, error) {
 
 	return u, nil
 }
+
 func (app *App) GetURLByUID(uid string) ([]storage.URL, error) {
 	u, err := app.db.GetUrlsByUID(uid)
 
@@ -49,4 +50,13 @@ func (app *App) GetURLByUID(uid string) ([]storage.URL, error) {
 	}
 
 	return u, nil
+}
+
+func (app *App) PingStorage() error {
+	_, err := app.db.IsAlive()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

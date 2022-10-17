@@ -29,10 +29,11 @@ func main() {
 	router := chi.NewRouter()
 	router.Use(gzip.GzipHandle)
 	router.Use(authMw)
-
 	router.Get("/{urlHash}", h.HandleGetURL)
 	router.Post("/", h.HandlePostURL)
 	router.Post("/api/shorten", h.HandleShortenURL)
 	router.Get("/api/user/urls", h.HandleListURL)
+	router.Get("/ping", h.HandlePing)
+
 	log.Panic(http.ListenAndServe(a.Config.ServerAddress, router))
 }
