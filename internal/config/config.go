@@ -1,9 +1,8 @@
 package config
 
 import (
-	"fmt"
-
 	"flag"
+	"fmt"
 
 	"github.com/caarlos0/env/v6"
 )

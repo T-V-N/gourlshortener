@@ -1,10 +1,12 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/T-V-N/gourlshortener/internal/app"
 	"github.com/go-chi/chi/v5"
@@ -27,6 +29,9 @@ func InitHandler(a *app.App) *Handler {
 }
 
 func (h *Handler) HandleGetURL(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
 	id := chi.URLParam(r, "urlHash")
 
 	if id == "" {
@@ -34,7 +39,7 @@ func (h *Handler) HandleGetURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url, err := h.app.GetURL(id)
+	url, err := h.app.GetURL(id, ctx)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -45,6 +50,9 @@ func (h *Handler) HandleGetURL(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) HandlePostURL(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
 	body, err := io.ReadAll(r.Body)
 
 	uid := r.Header.Get("uid")
@@ -54,7 +62,7 @@ func (h *Handler) HandlePostURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hash, err := h.app.SaveURL(string(body), uid)
+	hash, err := h.app.SaveURL(string(body), uid, ctx)
 	if err != nil {
 		http.Error(w, "Wrong URL passed", http.StatusBadRequest)
 		return
@@ -69,6 +77,9 @@ func (h *Handler) HandlePostURL(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) HandleShortenURL(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
 	obj := URL{}
 	if err := json.NewDecoder(r.Body).Decode(&obj); err != nil {
 		http.Error(w, "Error while parsing URL", http.StatusBadRequest)
@@ -77,7 +88,7 @@ func (h *Handler) HandleShortenURL(w http.ResponseWriter, r *http.Request) {
 
 	uid := r.Header.Get("uid")
 
-	hash, err := h.app.SaveURL(obj.URL, uid)
+	hash, err := h.app.SaveURL(obj.URL, uid, ctx)
 	if err != nil {
 		http.Error(w, "Wrong URL passed", http.StatusBadRequest)
 		return
@@ -96,9 +107,12 @@ func (h *Handler) HandleShortenURL(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) HandleListURL(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
 	uid := r.Header.Get("uid")
 
-	url, err := h.app.GetURLByUID(uid)
+	url, err := h.app.GetURLByUID(uid, ctx)
 	if err != nil {
 		http.Error(w, "Error getting URLs ;(", http.StatusBadRequest)
 		return
@@ -118,7 +132,10 @@ func (h *Handler) HandleListURL(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) HandlePing(w http.ResponseWriter, r *http.Request) {
-	err := h.app.PingStorage()
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	err := h.app.PingStorage(ctx)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

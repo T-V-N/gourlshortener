@@ -3,6 +3,7 @@ package storage
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
@@ -48,7 +49,7 @@ func InitFileStorage(data map[string]URL, cfg *config.Config) *FileStorage {
 	return &FileStorage{data, *cfg}
 }
 
-func (st *FileStorage) SaveURL(url, UID string) (string, error) {
+func (st *FileStorage) SaveURL(ctx context.Context, url, UID string) (string, error) {
 	hash := md5.Sum([]byte(url))
 	ShortURL := st.cfg.BaseURL + "/" + hex.EncodeToString(hash[:4])
 
@@ -77,7 +78,7 @@ func (st *FileStorage) SaveURL(url, UID string) (string, error) {
 	return ShortURL, nil
 }
 
-func (st *FileStorage) GetURL(hash string) (string, error) {
+func (st *FileStorage) GetURL(ctx context.Context, hash string) (string, error) {
 	url, exists := st.db[hash]
 	if !exists {
 		return hash, errors.New("an URL with this hash doesn't exist")
@@ -86,7 +87,7 @@ func (st *FileStorage) GetURL(hash string) (string, error) {
 	return url.URL, nil
 }
 
-func (st *FileStorage) GetUrlsByUID(uid string) ([]URL, error) {
+func (st *FileStorage) GetUrlsByUID(ctx context.Context, uid string) ([]URL, error) {
 	result := []URL{}
 	for _, url := range st.db {
 		if url.UID == uid {
@@ -97,7 +98,7 @@ func (st *FileStorage) GetUrlsByUID(uid string) ([]URL, error) {
 	return result, nil
 }
 
-func (st *FileStorage) IsAlive() (bool, error) {
+func (st *FileStorage) IsAlive(ctx context.Context) (bool, error) {
 	//file storage always alive
 	return true, nil
 }

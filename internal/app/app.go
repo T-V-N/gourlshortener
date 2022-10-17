@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"net/url"
 	"strings"
 
@@ -17,13 +18,13 @@ func InitApp(st storage.Storage, cfg *config.Config) *App {
 	return &App{st, cfg}
 }
 
-func (app *App) SaveURL(rawURL, UID string) (string, error) {
+func (app *App) SaveURL(rawURL, UID string, ctx context.Context) (string, error) {
 	u, err := url.ParseRequestURI(rawURL)
 	if err != nil {
 		return rawURL, err
 	}
 
-	hash, err := app.db.SaveURL(strings.ToLower(u.String()), UID)
+	hash, err := app.db.SaveURL(ctx, strings.ToLower(u.String()), UID)
 
 	if err != nil {
 		return u.String(), err
@@ -32,8 +33,8 @@ func (app *App) SaveURL(rawURL, UID string) (string, error) {
 	return hash, nil
 }
 
-func (app *App) GetURL(id string) (string, error) {
-	u, err := app.db.GetURL(id)
+func (app *App) GetURL(id string, ctx context.Context) (string, error) {
+	u, err := app.db.GetURL(ctx, id)
 
 	if err != nil {
 		return id, err
@@ -42,8 +43,8 @@ func (app *App) GetURL(id string) (string, error) {
 	return u, nil
 }
 
-func (app *App) GetURLByUID(uid string) ([]storage.URL, error) {
-	u, err := app.db.GetUrlsByUID(uid)
+func (app *App) GetURLByUID(uid string, ctx context.Context) ([]storage.URL, error) {
+	u, err := app.db.GetUrlsByUID(ctx, uid)
 
 	if err != nil {
 		return []storage.URL{}, err
@@ -52,8 +53,8 @@ func (app *App) GetURLByUID(uid string) ([]storage.URL, error) {
 	return u, nil
 }
 
-func (app *App) PingStorage() error {
-	_, err := app.db.IsAlive()
+func (app *App) PingStorage(ctx context.Context) error {
+	_, err := app.db.IsAlive(ctx)
 	if err != nil {
 		return err
 	}
