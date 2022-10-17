@@ -69,19 +69,20 @@ func (db *DBStorage) GetURL(ctx context.Context, hash string) (string, error) {
 
 	row := conn.QueryRow(ctx, "Select original_url from urls where hash = $1", hash)
 
-	var original_url string
-	err = row.Scan(&original_url)
+	var originalURL string
+	err = row.Scan(&originalURL)
 
 	if err != nil {
 		return "", err
 	}
 
-	return original_url, nil
+	return originalURL, nil
 }
 
 func (db *DBStorage) GetUrlsByUID(ctx context.Context, uid string) ([]URL, error) {
 	urls := make([]URL, 0)
 	conn, err := pgx.Connect(ctx, db.cfg.DatabaseDSN)
+
 	if err != nil {
 		log.Printf("Unable to connect to database: %v\n", err.Error())
 		return urls, err
@@ -117,11 +118,11 @@ func (db *DBStorage) GetUrlsByUID(ctx context.Context, uid string) ([]URL, error
 func (db *DBStorage) IsAlive(ctx context.Context) (bool, error) {
 	conn, err := pgx.Connect(ctx, db.cfg.DatabaseDSN)
 
-	defer conn.Close(ctx)
-
 	if err != nil {
 		return false, err
 	}
+
+	defer conn.Close(ctx)
 
 	return true, nil
 }
