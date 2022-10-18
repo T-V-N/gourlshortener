@@ -128,29 +128,28 @@ func (db *DBStorage) IsAlive(ctx context.Context) (bool, error) {
 }
 
 func (db *DBStorage) BatchSaveURL(ctx context.Context, urls []URL) error {
+	conn, err := pgx.Connect(ctx, db.cfg.DatabaseDSN)
+	if err != nil {
+		return err
+	}
 
-	return nil
-}
-
-func insertBatchURL(ctx context.Context, db *pgx.Conn, urls []URL) error {
-	tx, err := db.Begin(ctx)
+	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return err
 	}
 
 	defer tx.Rollback(ctx)
 
-	stmt, err := tx.Prepare(ctx, "batch insert", "INSERT INTO urls(uid, hash, original_url) VALUES(?,?,?)")
+	stmt, err := tx.Prepare(ctx, "batch insert", "INSERT INTO urls(uid, hash, original_url) VALUES($1,$2,$3)")
 	if err != nil {
 		return err
 	}
 
 	for _, u := range urls {
-		// шаг 3 — указываем, что каждое видео будет добавлено в транзакцию
 		if _, err = tx.Exec(ctx, stmt.Name, u.UID, u.ShortURL, u.URL); err != nil {
 			return err
 		}
 	}
-	// шаг 4 — сохраняем изменения
+
 	return tx.Commit(ctx)
 }

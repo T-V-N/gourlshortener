@@ -81,8 +81,8 @@ func (app *App) BatchSaveURL(ctx context.Context, obj []storage.BatchURL, uid st
 
 		hash := rawURL.CorrelationID
 
-		urls = append(urls, storage.URL{uid, hash, u.String()})
-		responseURLs = append(responseURLs, storage.BatchURL{"", hash, app.Config.BaseURL + "/" + hash})
+		urls = append(urls, storage.URL{UID: uid, ShortURL: hash, URL: u.String()})
+		responseURLs = append(responseURLs, storage.BatchURL{OriginalURL: "", CorrelationID: hash, ShortURL: app.Config.BaseURL + "/" + hash})
 	}
 
 	err := app.DB.BatchSaveURL(ctx, urls)

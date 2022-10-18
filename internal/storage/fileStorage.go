@@ -100,7 +100,6 @@ func (st *FileStorage) IsAlive(context.Context) (bool, error) {
 }
 
 func (st *FileStorage) BatchSaveURL(ctx context.Context, urls []URL) error {
-
 	for _, url := range urls {
 		st.db[url.ShortURL] = URL{url.UID, url.ShortURL, url.URL}
 	}
