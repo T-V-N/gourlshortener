@@ -71,15 +71,9 @@ func (h *Handler) HandlePostURL(w http.ResponseWriter, r *http.Request) {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == pgerrcode.UniqueViolation {
-				url, err := h.app.GetURL(hash, ctx)
-				if err != nil {
-					http.Error(w, "Unknown error", http.StatusInternalServerError)
-					return
-
-				}
-
 				w.WriteHeader(http.StatusConflict)
-				_, err = w.Write([]byte(url))
+				_, err = w.Write([]byte(h.app.Config.BaseURL + "/" + hash))
+
 				if err != nil {
 					http.Error(w, "Unknown error", http.StatusInternalServerError)
 					return
@@ -90,6 +84,7 @@ func (h *Handler) HandlePostURL(w http.ResponseWriter, r *http.Request) {
 		}
 
 		http.Error(w, "Wrong URL passed", http.StatusBadRequest)
+
 		return
 	}
 
@@ -118,16 +113,10 @@ func (h *Handler) HandleShortenURL(w http.ResponseWriter, r *http.Request) {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == pgerrcode.UniqueViolation {
-				url, err := h.app.GetURL(hash, ctx)
-				if err != nil {
-					http.Error(w, "Unknown error", http.StatusInternalServerError)
-					return
-				}
-
 				w.Header().Set("content-type", "application/json")
 				w.WriteHeader(http.StatusConflict)
 
-				shortenedURL := ShortenResult{Result: url}
+				shortenedURL := ShortenResult{Result: h.app.Config.BaseURL + "/" + hash}
 
 				err = json.NewEncoder(w).Encode(shortenedURL)
 				if err != nil {
