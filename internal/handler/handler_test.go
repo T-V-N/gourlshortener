@@ -213,8 +213,8 @@ func Test_HandleShortenBatchURL(t *testing.T) {
 			want: want{
 				statusCode: http.StatusCreated,
 				response: []storage.BatchURL{
-					{"http://yandex.ru", "js21y3", "http://localhost:8080/js21y3"},
-					{"http://google.com", "js21y3", "http://localhost:8080/zxfjasd"},
+					{OriginalURL: "http://yandex.ru", CorrelationID: "js21y3", ShortURL: "http://localhost:8080/js21y3"},
+					{OriginalURL: "http://google.com", CorrelationID: "js21y3", ShortURL: "http://localhost:8080/zxfjasd"},
 				},
 			},
 		},
