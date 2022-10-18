@@ -100,5 +100,28 @@ func (st *FileStorage) IsAlive(context.Context) (bool, error) {
 }
 
 func (st *FileStorage) BatchSaveURL(ctx context.Context, urls []URL) error {
+
+	for _, url := range urls {
+		st.db[url.ShortURL] = URL{url.UID, url.ShortURL, url.URL}
+	}
+
+	if st.cfg.FileStoragePath != "" {
+		file, err := os.OpenFile(st.cfg.FileStoragePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o777)
+		if err != nil {
+			return err
+		}
+
+		err = json.NewEncoder(file).Encode(urls)
+		if err != nil {
+			return err
+		}
+
+		_, err = file.Write([]byte{'\n'})
+
+		defer file.Close()
+
+		return err
+	}
+
 	return nil
 }
