@@ -23,7 +23,10 @@ func InitDBStorage(cfg *config.Config) (*DBStorage, error) {
 	_, err = conn.Exec(context.Background(), `
 	CREATE TABLE IF NOT EXISTS 
 	URLS 
-	(uid varchar, hash varchar, original_url varchar)
+	(uid varchar, hash varchar, original_url varchar);
+
+	CREATE UNIQUE INDEX IF NOT EXISTS hash_index ON urls
+	(hash);
 	`)
 
 	if err != nil {

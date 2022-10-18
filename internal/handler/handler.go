@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"log"
 	"net/http"
@@ -11,6 +12,8 @@ import (
 	"github.com/T-V-N/gourlshortener/internal/app"
 	"github.com/T-V-N/gourlshortener/internal/storage"
 	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type Handler struct {
@@ -65,6 +68,27 @@ func (h *Handler) HandlePostURL(w http.ResponseWriter, r *http.Request) {
 
 	hash, err := h.app.SaveURL(string(body), uid, ctx)
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == pgerrcode.UniqueViolation {
+				url, err := h.app.GetURL(hash, ctx)
+				if err != nil {
+					http.Error(w, "Unknown error", http.StatusInternalServerError)
+					return
+
+				}
+
+				w.WriteHeader(http.StatusConflict)
+				_, err = w.Write([]byte(url))
+				if err != nil {
+					http.Error(w, "Unknown error", http.StatusInternalServerError)
+					return
+				}
+
+				return
+			}
+		}
+
 		http.Error(w, "Wrong URL passed", http.StatusBadRequest)
 		return
 	}
@@ -91,6 +115,29 @@ func (h *Handler) HandleShortenURL(w http.ResponseWriter, r *http.Request) {
 
 	hash, err := h.app.SaveURL(obj.URL, uid, ctx)
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == pgerrcode.UniqueViolation {
+				url, err := h.app.GetURL(hash, ctx)
+				if err != nil {
+					http.Error(w, "Unknown error", http.StatusInternalServerError)
+					return
+				}
+
+				w.Header().Set("content-type", "application/json")
+				w.WriteHeader(http.StatusConflict)
+
+				shortenedURL := ShortenResult{Result: url}
+
+				err = json.NewEncoder(w).Encode(shortenedURL)
+				if err != nil {
+					http.Error(w, "Unknown error", http.StatusInternalServerError)
+					return
+				}
+				return
+			}
+		}
+
 		http.Error(w, "Wrong URL passed", http.StatusBadRequest)
 		return
 	}

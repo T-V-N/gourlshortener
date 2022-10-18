@@ -27,10 +27,11 @@ func (app *App) SaveURL(rawURL, UID string, ctx context.Context) (string, error)
 
 	hash := md5.Sum([]byte(u.String()))
 	stringHash := hex.EncodeToString(hash[:4])
+
 	err = app.DB.SaveURL(ctx, u.String(), UID, stringHash)
 
 	if err != nil {
-		return u.String(), err
+		return stringHash, err
 	}
 
 	return app.Config.BaseURL + "/" + stringHash, nil
