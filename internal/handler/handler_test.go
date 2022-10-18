@@ -3,6 +3,7 @@ package handler_test
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -188,6 +189,58 @@ func Test_HandlerShortenURL(t *testing.T) {
 
 			assert.Equal(t, tt.want.response, string(resBody))
 			assert.Equal(t, tt.want.statusCode, w.Code)
+		})
+	}
+}
+
+func Test_HandleShortenBatchURL(t *testing.T) {
+	type want struct {
+		response   []storage.BatchURL
+		statusCode int
+	}
+
+	tests := []struct {
+		name string
+		body []storage.BatchURL
+		want want
+	}{
+		{
+			name: "regular link sent",
+			body: []storage.BatchURL{
+				storage.BatchURL{"http://yandex.ru", "js21y3", ""},
+				storage.BatchURL{"http://google.com", "zxfjasd", ""},
+			},
+			want: want{
+				statusCode: http.StatusCreated,
+				response: []storage.BatchURL{
+					storage.BatchURL{"http://yandex.ru", "js21y3", "http://localhost:8080/js21y3"},
+					storage.BatchURL{"http://google.com", "js21y3", "http://localhost:8080/zxfjasd"},
+				},
+			},
+		},
+	}
+
+	cfg, _ := InitTestConfig()
+	st := storage.InitStorage(map[string]storage.URL{}, cfg)
+	app := app.InitApp(st, cfg)
+	hn := handler.InitHandler(app)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			body := bytes.NewBuffer([]byte{})
+			json.NewEncoder(body).Encode(tt.body)
+			request := httptest.NewRequest(http.MethodPost, "/api/shorten/batch", body)
+
+			w := httptest.NewRecorder()
+
+			hn.HandleShortenBatchURL(w, request)
+
+			resp := []storage.BatchURL{}
+			json.NewDecoder(w.Body).Decode(&resp)
+
+			for i, el := range resp {
+				assert.Equal(t, tt.want.response[i].ShortURL, el.ShortURL)
+			}
 		})
 	}
 }

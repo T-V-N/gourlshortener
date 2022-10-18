@@ -12,11 +12,18 @@ type URL struct {
 	URL      string `json:"original_url"`
 }
 
+type BatchURL struct {
+	OriginalURL   string `json:"original_url,omitempty"`
+	CorrelationID string `json:"correlation_id"`
+	ShortURL      string `json:"short_url"`
+}
+
 type Storage interface {
 	SaveURL(ctx context.Context, url, uid, hash string) error
 	GetURL(ctx context.Context, hash string) (string, error)
 	GetUrlsByUID(ctx context.Context, uid string) ([]URL, error)
 	IsAlive(ctx context.Context) (bool, error)
+	BatchSaveURL(ctx context.Context, urls []URL) error
 }
 
 func InitStorage(data map[string]URL, cfg *config.Config) Storage {

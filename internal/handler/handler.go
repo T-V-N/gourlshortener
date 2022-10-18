@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/T-V-N/gourlshortener/internal/app"
+	"github.com/T-V-N/gourlshortener/internal/storage"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -100,6 +101,35 @@ func (h *Handler) HandleShortenURL(w http.ResponseWriter, r *http.Request) {
 	shortenedURL := ShortenResult{Result: hash}
 
 	err = json.NewEncoder(w).Encode(shortenedURL)
+	if err != nil {
+		http.Error(w, "Something went wrong", http.StatusBadRequest)
+		return
+	}
+}
+
+func (h *Handler) HandleShortenBatchURL(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	obj := []storage.BatchURL{}
+
+	if err := json.NewDecoder(r.Body).Decode(&obj); err != nil {
+		http.Error(w, "Error while parsing URL", http.StatusBadRequest)
+		return
+	}
+
+	uid := r.Header.Get("uid")
+
+	urls, err := h.app.BatchSaveURL(ctx, obj, uid)
+	if err != nil {
+		http.Error(w, "Wrong URL passed", http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("content-type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+
+	err = json.NewEncoder(w).Encode(urls)
 	if err != nil {
 		http.Error(w, "Something went wrong", http.StatusBadRequest)
 		return

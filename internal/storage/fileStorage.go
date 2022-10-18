@@ -98,3 +98,7 @@ func (st *FileStorage) IsAlive(context.Context) (bool, error) {
 
 	return true, nil
 }
+
+func (st *FileStorage) BatchSaveURL(ctx context.Context, urls []URL) error {
+	return nil
+}
