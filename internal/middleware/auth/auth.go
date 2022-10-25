@@ -76,14 +76,14 @@ func InitAuth(cfg *config.Config) func(next http.Handler) http.Handler {
 				return
 			}
 
-			valid, err := isValidCookie(cookie, cfg.SecretKey)
+			isValid, err := isValidCookie(cookie, cfg.SecretKey)
 			if err != nil {
-				http.Error(w, "Can't validate the token", http.StatusBadRequest)
+				http.Error(w, "Can't validate the token", http.StatusInternalServerError)
 				return
 			}
 
 			var ctx context.Context
-			if valid {
+			if isValid {
 				hexValue := cookie.Value
 				ctx = context.WithValue(r.Context(), UIDKey{}, hexValue[32:])
 			} else {

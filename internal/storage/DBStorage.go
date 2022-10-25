@@ -5,16 +5,16 @@ import (
 	"log"
 
 	"github.com/T-V-N/gourlshortener/internal/config"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type DBStorage struct {
-	conn *pgx.Conn
+	conn *pgxpool.Pool
 	cfg  config.Config
 }
 
 func InitDBStorage(cfg *config.Config) (*DBStorage, error) {
-	conn, err := pgx.Connect(context.Background(), cfg.DatabaseDSN)
+	conn, err := pgxpool.New(context.Background(), cfg.DatabaseDSN)
 	if err != nil {
 		log.Printf("Unable to connect to database: %v\n", err.Error())
 		return nil, err
@@ -34,25 +34,15 @@ func InitDBStorage(cfg *config.Config) (*DBStorage, error) {
 		return nil, err
 	}
 
-	defer conn.Close(context.Background())
-
 	return &DBStorage{conn, *cfg}, nil
 }
 
 func (db *DBStorage) SaveURL(ctx context.Context, url, uid, hash string) error {
-	conn, err := pgx.Connect(ctx, db.cfg.DatabaseDSN)
-	if err != nil {
-		log.Printf("Unable to connect to database: %v\n", err.Error())
-		return err
-	}
-
-	defer conn.Close(ctx)
-
 	sqlStatement := `
 	INSERT INTO urls (uid, hash, original_url)
 	VALUES ($1, $2, $3)`
 
-	_, err = conn.Exec(ctx, sqlStatement, uid, hash, url)
+	_, err := db.conn.Exec(ctx, sqlStatement, uid, hash, url)
 
 	if err != nil {
 		return err
@@ -62,18 +52,10 @@ func (db *DBStorage) SaveURL(ctx context.Context, url, uid, hash string) error {
 }
 
 func (db *DBStorage) GetURL(ctx context.Context, hash string) (string, error) {
-	conn, err := pgx.Connect(ctx, db.cfg.DatabaseDSN)
-	if err != nil {
-		log.Printf("Unable to connect to database: %v\n", err.Error())
-		return "", err
-	}
-
-	defer conn.Close(ctx)
-
-	row := conn.QueryRow(ctx, "Select original_url from urls where hash = $1", hash)
+	row := db.conn.QueryRow(ctx, "Select original_url from urls where hash = $1", hash)
 
 	var originalURL string
-	err = row.Scan(&originalURL)
+	err := row.Scan(&originalURL)
 
 	if err != nil {
 		return "", err
@@ -84,14 +66,8 @@ func (db *DBStorage) GetURL(ctx context.Context, hash string) (string, error) {
 
 func (db *DBStorage) GetUrlsByUID(ctx context.Context, uid string) ([]URL, error) {
 	urls := make([]URL, 0)
-	conn, err := pgx.Connect(ctx, db.cfg.DatabaseDSN)
 
-	if err != nil {
-		log.Printf("Unable to connect to database: %v\n", err.Error())
-		return urls, err
-	}
-
-	rows, err := conn.Query(ctx, "SELECT hash, original_url from urls where uid = $1", uid)
+	rows, err := db.conn.Query(ctx, "SELECT hash, original_url from urls where uid = $1", uid)
 	if err != nil {
 		return nil, err
 	}
@@ -119,24 +95,17 @@ func (db *DBStorage) GetUrlsByUID(ctx context.Context, uid string) ([]URL, error
 }
 
 func (db *DBStorage) IsAlive(ctx context.Context) (bool, error) {
-	conn, err := pgx.Connect(ctx, db.cfg.DatabaseDSN)
+	err := db.conn.Ping(ctx)
 
 	if err != nil {
 		return false, err
 	}
 
-	defer conn.Close(ctx)
-
 	return true, nil
 }
 
 func (db *DBStorage) BatchSaveURL(ctx context.Context, urls []URL) error {
-	conn, err := pgx.Connect(ctx, db.cfg.DatabaseDSN)
-	if err != nil {
-		return err
-	}
-
-	tx, err := conn.Begin(ctx)
+	tx, err := db.conn.Begin(ctx)
 	if err != nil {
 		return err
 	}
