@@ -59,14 +59,14 @@ func (h *Handler) HandlePostURL(w http.ResponseWriter, r *http.Request) {
 
 	body, err := io.ReadAll(r.Body)
 
-	uid := r.Header.Get("uid")
+	uid := r.Context().Value("uid")
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	hash, err := h.app.SaveURL(string(body), uid, ctx)
+	hash, err := h.app.SaveURL(string(body), uid.(string), ctx)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
@@ -106,9 +106,9 @@ func (h *Handler) HandleShortenURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	uid := r.Header.Get("uid")
+	uid := r.Context().Value("uid")
 
-	hash, err := h.app.SaveURL(obj.URL, uid, ctx)
+	hash, err := h.app.SaveURL(obj.URL, uid.(string), ctx)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
@@ -154,9 +154,9 @@ func (h *Handler) HandleShortenBatchURL(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	uid := r.Header.Get("uid")
+	uid := r.Context().Value("uid")
 
-	urls, err := h.app.BatchSaveURL(ctx, obj, uid)
+	urls, err := h.app.BatchSaveURL(ctx, obj, uid.(string))
 	if err != nil {
 		http.Error(w, "Wrong URL passed", http.StatusBadRequest)
 		return
@@ -176,9 +176,9 @@ func (h *Handler) HandleListURL(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
-	uid := r.Header.Get("uid")
+	uid := r.Context().Value("uid")
 
-	url, err := h.app.GetURLByUID(uid, ctx)
+	url, err := h.app.GetURLByUID(uid.(string), ctx)
 	if err != nil {
 		http.Error(w, "Error getting URLs ;(", http.StatusBadRequest)
 		return

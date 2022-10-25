@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
@@ -66,10 +67,10 @@ func InitAuth(cfg *config.Config) func(next http.Handler) http.Handler {
 				}
 
 				uid := newCookie.Value[32:]
-				r.Header.Set("uid", uid)
+				ctx := context.WithValue(r.Context(), "uid", uid)
 
 				http.SetCookie(w, newCookie)
-				next.ServeHTTP(w, r)
+				next.ServeHTTP(w, r.WithContext(ctx))
 				return
 			}
 
@@ -79,9 +80,10 @@ func InitAuth(cfg *config.Config) func(next http.Handler) http.Handler {
 				return
 			}
 
+			var ctx context.Context
 			if valid {
 				hexValue := cookie.Value
-				r.Header.Set("uid", hexValue[32:])
+				ctx = context.WithValue(r.Context(), "uid", hexValue[32:])
 			} else {
 				newCookie, err := generateCookie(cfg.SecretKey)
 				if err != nil {
@@ -90,11 +92,12 @@ func InitAuth(cfg *config.Config) func(next http.Handler) http.Handler {
 				}
 
 				uid := newCookie.Value[32:]
-				r.Header.Set("uid", uid)
+				ctx = context.WithValue(r.Context(), "uid", uid)
+
 				http.SetCookie(w, newCookie)
 			}
 
-			next.ServeHTTP(w, r)
+			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
