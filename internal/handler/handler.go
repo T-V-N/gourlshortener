@@ -118,11 +118,9 @@ func (h *Handler) HandleShortenURL(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				http.Error(w, "Unknown error", http.StatusInternalServerError)
 			}
-
-			return
+		} else {
+			http.Error(w, "Wrong URL passed", http.StatusBadRequest)
 		}
-
-		http.Error(w, "Wrong URL passed", http.StatusBadRequest)
 
 		return
 	}
