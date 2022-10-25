@@ -117,8 +117,9 @@ func (h *Handler) HandleShortenURL(w http.ResponseWriter, r *http.Request) {
 			err = json.NewEncoder(w).Encode(shortenedURL)
 			if err != nil {
 				http.Error(w, "Unknown error", http.StatusInternalServerError)
-				return
 			}
+
+			return
 		}
 
 		http.Error(w, "Wrong URL passed", http.StatusBadRequest)
