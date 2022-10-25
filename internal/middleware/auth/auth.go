@@ -11,6 +11,8 @@ import (
 	"github.com/T-V-N/gourlshortener/internal/config"
 )
 
+type UIDKey struct{}
+
 func generateRandom(size int) ([]byte, error) {
 	b := make([]byte, size)
 	_, err := rand.Read(b)
@@ -67,7 +69,7 @@ func InitAuth(cfg *config.Config) func(next http.Handler) http.Handler {
 				}
 
 				uid := newCookie.Value[32:]
-				ctx := context.WithValue(r.Context(), "uid", uid)
+				ctx := context.WithValue(r.Context(), UIDKey{}, uid)
 
 				http.SetCookie(w, newCookie)
 				next.ServeHTTP(w, r.WithContext(ctx))
@@ -83,7 +85,7 @@ func InitAuth(cfg *config.Config) func(next http.Handler) http.Handler {
 			var ctx context.Context
 			if valid {
 				hexValue := cookie.Value
-				ctx = context.WithValue(r.Context(), "uid", hexValue[32:])
+				ctx = context.WithValue(r.Context(), UIDKey{}, hexValue[32:])
 			} else {
 				newCookie, err := generateCookie(cfg.SecretKey)
 				if err != nil {
@@ -92,7 +94,7 @@ func InitAuth(cfg *config.Config) func(next http.Handler) http.Handler {
 				}
 
 				uid := newCookie.Value[32:]
-				ctx = context.WithValue(r.Context(), "uid", uid)
+				ctx = context.WithValue(r.Context(), UIDKey{}, uid)
 
 				http.SetCookie(w, newCookie)
 			}

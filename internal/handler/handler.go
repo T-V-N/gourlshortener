@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/T-V-N/gourlshortener/internal/app"
+	"github.com/T-V-N/gourlshortener/internal/middleware/auth"
 	"github.com/T-V-N/gourlshortener/internal/storage"
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgerrcode"
@@ -59,14 +60,14 @@ func (h *Handler) HandlePostURL(w http.ResponseWriter, r *http.Request) {
 
 	body, err := io.ReadAll(r.Body)
 
-	uid := r.Context().Value("uid")
+	uid, _ := r.Context().Value(auth.UIDKey{}).(string)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	hash, err := h.app.SaveURL(string(body), uid.(string), ctx)
+	hash, err := h.app.SaveURL(string(body), uid, ctx)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
@@ -106,9 +107,9 @@ func (h *Handler) HandleShortenURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	uid := r.Context().Value("uid")
+	uid, _ := r.Context().Value(auth.UIDKey{}).(string)
 
-	hash, err := h.app.SaveURL(obj.URL, uid.(string), ctx)
+	hash, err := h.app.SaveURL(obj.URL, uid, ctx)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
@@ -154,9 +155,9 @@ func (h *Handler) HandleShortenBatchURL(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	uid := r.Context().Value("uid")
+	uid, _ := r.Context().Value(auth.UIDKey{}).(string)
 
-	urls, err := h.app.BatchSaveURL(ctx, obj, uid.(string))
+	urls, err := h.app.BatchSaveURL(ctx, obj, uid)
 	if err != nil {
 		http.Error(w, "Wrong URL passed", http.StatusBadRequest)
 		return
@@ -176,7 +177,7 @@ func (h *Handler) HandleListURL(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
-	uid := r.Context().Value("uid")
+	uid := r.Context().Value(auth.UIDKey{})
 
 	url, err := h.app.GetURLByUID(uid.(string), ctx)
 	if err != nil {
