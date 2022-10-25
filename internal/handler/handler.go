@@ -78,6 +78,8 @@ func (h *Handler) HandlePostURL(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "Unknown error", http.StatusInternalServerError)
 				return
 			}
+
+			return
 		}
 
 		http.Error(w, "Wrong URL passed", http.StatusBadRequest)
