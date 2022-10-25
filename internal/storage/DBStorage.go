@@ -23,7 +23,7 @@ func InitDBStorage(cfg *config.Config) (*DBStorage, error) {
 	_, err = conn.Exec(context.Background(), `
 	CREATE TABLE IF NOT EXISTS 
 	URLS 
-	(uid varchar, hash varchar, original_url varchar);
+	(user_uid varchar, url_hash varchar, original_url varchar);
 
 	CREATE UNIQUE INDEX IF NOT EXISTS hash_index ON urls
 	(hash);
@@ -39,7 +39,7 @@ func InitDBStorage(cfg *config.Config) (*DBStorage, error) {
 
 func (db *DBStorage) SaveURL(ctx context.Context, url, uid, hash string) error {
 	sqlStatement := `
-	INSERT INTO urls (uid, hash, original_url)
+	INSERT INTO urls (user_uid, url_hash, original_url)
 	VALUES ($1, $2, $3)`
 
 	_, err := db.conn.Exec(ctx, sqlStatement, uid, hash, url)
@@ -52,7 +52,7 @@ func (db *DBStorage) SaveURL(ctx context.Context, url, uid, hash string) error {
 }
 
 func (db *DBStorage) GetURL(ctx context.Context, hash string) (string, error) {
-	row := db.conn.QueryRow(ctx, "Select original_url from urls where hash = $1", hash)
+	row := db.conn.QueryRow(ctx, "Select original_url from urls where url_hash = $1", hash)
 
 	var originalURL string
 	err := row.Scan(&originalURL)
@@ -67,14 +67,13 @@ func (db *DBStorage) GetURL(ctx context.Context, hash string) (string, error) {
 func (db *DBStorage) GetUrlsByUID(ctx context.Context, uid string) ([]URL, error) {
 	urls := make([]URL, 0)
 
-	rows, err := db.conn.Query(ctx, "SELECT hash, original_url from urls where uid = $1", uid)
+	rows, err := db.conn.Query(ctx, "SELECT hash, original_url from urls where user_uid = $1", uid)
 	if err != nil {
 		return nil, err
 	}
 
 	defer rows.Close()
 
-	// пробегаем по всем записям
 	for rows.Next() {
 		var u URL
 		err = rows.Scan(&u.ShortURL, &u.URL)
@@ -112,7 +111,7 @@ func (db *DBStorage) BatchSaveURL(ctx context.Context, urls []URL) error {
 
 	defer tx.Rollback(ctx)
 
-	stmt, err := tx.Prepare(ctx, "batch insert", "INSERT INTO urls(uid, hash, original_url) VALUES($1,$2,$3)")
+	stmt, err := tx.Prepare(ctx, "batch insert", "INSERT INTO urls(user_uid, url_hash, original_url) VALUES($1,$2,$3)")
 	if err != nil {
 		return err
 	}
