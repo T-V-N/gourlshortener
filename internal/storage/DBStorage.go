@@ -26,7 +26,7 @@ func InitDBStorage(cfg *config.Config) (*DBStorage, error) {
 	(user_uid varchar, url_hash varchar, original_url varchar);
 
 	CREATE UNIQUE INDEX IF NOT EXISTS hash_index ON urls
-	(hash);
+	(url_hash);
 	`)
 
 	if err != nil {
