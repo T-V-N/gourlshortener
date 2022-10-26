@@ -24,6 +24,7 @@ type Storage interface {
 	GetUrlsByUID(ctx context.Context, uid string) ([]URL, error)
 	IsAlive(ctx context.Context) (bool, error)
 	BatchSaveURL(ctx context.Context, urls []URL) error
+	KillConn() error
 }
 
 func InitStorage(data map[string]URL, cfg *config.Config) Storage {

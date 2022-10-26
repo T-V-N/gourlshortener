@@ -124,3 +124,8 @@ func (db *DBStorage) BatchSaveURL(ctx context.Context, urls []URL) error {
 
 	return tx.Commit(ctx)
 }
+
+func (db *DBStorage) KillConn() error {
+	db.conn.Close()
+	return nil
+}

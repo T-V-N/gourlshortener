@@ -36,5 +36,5 @@ func main() {
 	router.Post("/api/shorten/batch", h.HandleShortenBatchURL)
 	router.Get("/ping", h.HandlePing)
 
-	log.Panic(http.ListenAndServe(a.Config.ServerAddress, router))
+	log.Panic(http.ListenAndServe(a.Config.ServerAddress, router), st.KillConn())
 }

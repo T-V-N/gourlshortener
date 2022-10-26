@@ -124,3 +124,7 @@ func (st *FileStorage) BatchSaveURL(ctx context.Context, urls []URL) error {
 
 	return nil
 }
+
+func (st *FileStorage) KillConn() error {
+	return nil
+}
