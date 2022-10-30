@@ -45,12 +45,18 @@ func (h *Handler) HandleGetURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	url, err := h.app.GetURL(id, ctx)
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	w.Header().Add("Location", url)
+	if url.IsDeleted {
+		http.Error(w, err.Error(), http.StatusGone)
+		return
+	}
+
+	w.Header().Add("Location", url.URL)
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
@@ -205,4 +211,28 @@ func (h *Handler) HandlePing(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (h *Handler) HandleDeleteListURL(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	uid := r.Context().Value(auth.UIDKey{})
+
+	rawHashes := []string{}
+	err := json.NewDecoder(r.Body).Decode(&rawHashes)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = h.app.DeleteListURL(ctx, rawHashes, uid.(string))
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusAccepted)
 }

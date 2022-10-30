@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
+	"log"
 	"net/url"
 
 	"github.com/T-V-N/gourlshortener/internal/config"
@@ -11,12 +12,35 @@ import (
 )
 
 type App struct {
-	DB     storage.Storage
-	Config *config.Config
+	DB         storage.Storage
+	Config     *config.Config
+	deleteChan chan storage.DeletionEntry
 }
 
 func InitApp(st storage.Storage, cfg *config.Config) *App {
-	return &App{st, cfg}
+	delChan := make(chan storage.DeletionEntry)
+	app := &App{st, cfg, delChan}
+
+	go app.deletionConsumer(delChan)
+
+	return app
+}
+
+func (app *App) deletionConsumer(ch chan storage.DeletionEntry) {
+	buff := []storage.DeletionEntry{}
+	for el := range ch {
+		if len(buff) == 5 {
+			err := app.DB.DeleteURLs(context.Background(), buff)
+
+			if err != nil {
+				log.Println(err)
+			}
+
+			buff = buff[:0]
+		}
+
+		buff = append(buff, storage.DeletionEntry{Hash: el.Hash, UID: el.UID})
+	}
 }
 
 func (app *App) SaveURL(rawURL, UID string, ctx context.Context) (string, error) {
@@ -37,11 +61,11 @@ func (app *App) SaveURL(rawURL, UID string, ctx context.Context) (string, error)
 	return app.Config.BaseURL + "/" + stringHash, nil
 }
 
-func (app *App) GetURL(id string, ctx context.Context) (string, error) {
+func (app *App) GetURL(id string, ctx context.Context) (storage.URL, error) {
 	u, err := app.DB.GetURL(ctx, id)
 
 	if err != nil {
-		return id, err
+		return storage.URL{}, err
 	}
 
 	return u, nil
@@ -92,4 +116,14 @@ func (app *App) BatchSaveURL(ctx context.Context, obj []storage.BatchURL, uid st
 	}
 
 	return responseURLs, nil
+}
+
+func (app *App) DeleteListURL(ctx context.Context, rawHashes []string, uid string) error {
+	go func() {
+		for _, rawHash := range rawHashes {
+			app.deleteChan <- storage.DeletionEntry{Hash: rawHash, UID: uid}
+		}
+	}()
+
+	return nil
 }

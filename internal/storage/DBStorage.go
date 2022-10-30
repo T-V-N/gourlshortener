@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/T-V-N/gourlshortener/internal/config"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -23,7 +24,7 @@ func InitDBStorage(cfg *config.Config) (*DBStorage, error) {
 	_, err = conn.Exec(context.Background(), `
 	CREATE TABLE IF NOT EXISTS 
 	URLS 
-	(user_uid varchar, url_hash varchar, original_url varchar);
+	(user_uid varchar, url_hash varchar, original_url varchar, is_deleted bool default false);
 
 	CREATE UNIQUE INDEX IF NOT EXISTS hash_index ON urls
 	(url_hash);
@@ -51,14 +52,14 @@ func (db *DBStorage) SaveURL(ctx context.Context, url, uid, hash string) error {
 	return nil
 }
 
-func (db *DBStorage) GetURL(ctx context.Context, hash string) (string, error) {
+func (db *DBStorage) GetURL(ctx context.Context, hash string) (URL, error) {
 	row := db.conn.QueryRow(ctx, "Select original_url from urls where url_hash = $1", hash)
 
-	var originalURL string
+	var originalURL URL
 	err := row.Scan(&originalURL)
 
 	if err != nil {
-		return "", err
+		return URL{}, err
 	}
 
 	return originalURL, nil
@@ -127,5 +128,21 @@ func (db *DBStorage) BatchSaveURL(ctx context.Context, urls []URL) error {
 
 func (db *DBStorage) KillConn() error {
 	db.conn.Close()
+	return nil
+}
+
+func (db *DBStorage) DeleteURLs(ctx context.Context, entries []DeletionEntry) error {
+	b := pgx.Batch{}
+	for _, e := range entries {
+		b.Queue("UPDATE urls set is_deleted = true WHERE user_uid = $1 and url_hash = $2", e.UID, e.Hash)
+	}
+
+	br := db.conn.SendBatch(context.Background(), &b)
+	err := br.Close()
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
