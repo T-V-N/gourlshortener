@@ -53,16 +53,16 @@ func (db *DBStorage) SaveURL(ctx context.Context, url, uid, hash string) error {
 }
 
 func (db *DBStorage) GetURL(ctx context.Context, hash string) (URL, error) {
-	row := db.conn.QueryRow(ctx, "Select original_url from urls where url_hash = $1", hash)
+	row := db.conn.QueryRow(ctx, "Select * from urls where url_hash = $1", hash)
 
-	var originalURL URL
-	err := row.Scan(&originalURL)
+	u := URL{}
+	err := row.Scan(&u.UID, &u.ShortURL, &u.URL, &u.IsDeleted)
 
 	if err != nil {
 		return URL{}, err
 	}
 
-	return originalURL, nil
+	return u, nil
 }
 
 func (db *DBStorage) GetUrlsByUID(ctx context.Context, uid string) ([]URL, error) {

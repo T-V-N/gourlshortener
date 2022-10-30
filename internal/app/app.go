@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"log"
 	"net/url"
+	"time"
 
 	"github.com/T-V-N/gourlshortener/internal/config"
 	"github.com/T-V-N/gourlshortener/internal/storage"
@@ -28,8 +29,22 @@ func InitApp(st storage.Storage, cfg *config.Config) *App {
 
 func (app *App) deletionConsumer(ch chan storage.DeletionEntry) {
 	buff := []storage.DeletionEntry{}
-	for el := range ch {
-		if len(buff) == 5 {
+	ticker := time.NewTicker(30 * time.Second)
+	for {
+		select {
+		case el := <-ch:
+			if len(buff) == 5 {
+				err := app.DB.DeleteURLs(context.Background(), buff)
+
+				if err != nil {
+					log.Println(err)
+				}
+
+				buff = buff[:0]
+			}
+
+			buff = append(buff, storage.DeletionEntry{Hash: el.Hash, UID: el.UID})
+		case <-ticker.C:
 			err := app.DB.DeleteURLs(context.Background(), buff)
 
 			if err != nil {
@@ -38,8 +53,6 @@ func (app *App) deletionConsumer(ch chan storage.DeletionEntry) {
 
 			buff = buff[:0]
 		}
-
-		buff = append(buff, storage.DeletionEntry{Hash: el.Hash, UID: el.UID})
 	}
 }
 

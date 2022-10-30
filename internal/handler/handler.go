@@ -52,7 +52,7 @@ func (h *Handler) HandleGetURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if url.IsDeleted {
-		http.Error(w, err.Error(), http.StatusGone)
+		http.Error(w, "Gone", http.StatusGone)
 		return
 	}
 
