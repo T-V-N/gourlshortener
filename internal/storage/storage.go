@@ -1,36 +1,48 @@
 package storage
 
 import (
-	"crypto/md5"
-	"encoding/hex"
-	"errors"
+	"context"
+
+	"github.com/T-V-N/gourlshortener/internal/config"
 )
 
-type Storage struct {
-	db map[string]string
+type DeletionEntry struct {
+	UID  string
+	Hash string
 }
 
-func NewStorage(data map[string]string) *Storage {
-	if data == nil {
-		return &Storage{make(map[string]string)}
+type URL struct {
+	UID       string `json:"-"`
+	ShortURL  string `json:"short_url"`
+	URL       string `json:"original_url"`
+	IsDeleted bool
+}
+
+type BatchURL struct {
+	OriginalURL   string `json:"original_url,omitempty"`
+	CorrelationID string `json:"correlation_id"`
+	ShortURL      string `json:"short_url"`
+}
+
+type Storage interface {
+	SaveURL(ctx context.Context, url, uid, hash string) error
+	GetURL(ctx context.Context, hash string) (URL, error)
+	GetUrlsByUID(ctx context.Context, uid string) ([]URL, error)
+	IsAlive(ctx context.Context) (bool, error)
+	BatchSaveURL(ctx context.Context, urls []URL) error
+	KillConn() error
+	DeleteURLs(context.Context, []DeletionEntry) error
+}
+
+func InitStorage(data map[string]URL, cfg *config.Config) Storage {
+	if cfg.DatabaseDSN != "" {
+		storage, err := InitDBStorage(cfg)
+		if err != nil {
+			return InitFileStorage(data, cfg)
+		}
+
+		return storage
 	}
 
-	return &Storage{data}
-}
-
-func (st *Storage) SaveURL(url string) (string, error) {
-	hash := md5.Sum([]byte(url))
-	shortHash := hex.EncodeToString(hash[:4])
-	st.db[shortHash] = url
-
-	return shortHash, nil
-}
-
-func (st *Storage) GetURL(hash string) (string, error) {
-	url, exists := st.db[hash]
-	if !exists {
-		return hash, errors.New("an URL with this hash doesn't exist")
-	}
-
-	return url, nil
+	return InitFileStorage(data, cfg)
 }
