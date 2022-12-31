@@ -29,7 +29,7 @@ func InitApp(st storage.Storage, cfg *config.Config) *App {
 
 func (app *App) deletionConsumer(ch chan storage.DeletionEntry) {
 	buff := []storage.DeletionEntry{}
-	ticker := time.NewTicker(30 * time.Second)
+	ticker := time.NewTicker(10 * time.Second)
 	for {
 		select {
 		case el := <-ch:
