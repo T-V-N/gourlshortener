@@ -11,11 +11,14 @@ import (
 	"github.com/T-V-N/gourlshortener/internal/config"
 )
 
+// FileStorage is for file storage
 type FileStorage struct {
-	db  map[string]URL
-	cfg config.Config
+	db  map[string]URL // db here is a simple map hash to url string
+	cfg config.Config  // config
 }
 
+// InitFileStorage inits a file storage using cfg config
+// Creates a file and uses as a storage
 func InitFileStorage(data map[string]URL, cfg *config.Config) *FileStorage {
 	if cfg.FileStoragePath == "" {
 		if data == nil {
@@ -46,6 +49,7 @@ func InitFileStorage(data map[string]URL, cfg *config.Config) *FileStorage {
 	return &FileStorage{data, *cfg}
 }
 
+// SaveURL saves  url with hash binding it to a user with certain uid
 func (st *FileStorage) SaveURL(ctx context.Context, url, uid, hash string) error {
 	st.db[hash] = URL{uid, hash, url, false}
 
@@ -72,6 +76,7 @@ func (st *FileStorage) SaveURL(ctx context.Context, url, uid, hash string) error
 	return nil
 }
 
+// GetURL returns an URL bound to a hash passed
 func (st *FileStorage) GetURL(ctx context.Context, hash string) (URL, error) {
 	url, exists := st.db[hash]
 	if !exists {
@@ -81,6 +86,7 @@ func (st *FileStorage) GetURL(ctx context.Context, hash string) (URL, error) {
 	return url, nil
 }
 
+// GetUrlsByUID returns a list of URLs belonging to a given user
 func (st *FileStorage) GetUrlsByUID(ctx context.Context, uid string) ([]URL, error) {
 	result := []URL{}
 
@@ -93,11 +99,13 @@ func (st *FileStorage) GetUrlsByUID(ctx context.Context, uid string) ([]URL, err
 	return result, nil
 }
 
+// IsAlive checks whether if the file db is alive (always ok)
 func (st *FileStorage) IsAlive(context.Context) (bool, error) {
 	// file storage always alive
 	return true, nil
 }
 
+// BatchSaveURL saves a list of URLs to a file
 func (st *FileStorage) BatchSaveURL(ctx context.Context, urls []URL) error {
 	for _, url := range urls {
 		st.db[url.ShortURL] = URL{url.UID, url.ShortURL, url.URL, false}
@@ -128,6 +136,7 @@ func (st *FileStorage) KillConn() error {
 	return nil
 }
 
+// DeleteURLs deletes URLs from the file (not actually removing them, but marking as deleted)
 func (st *FileStorage) DeleteURLs(ctx context.Context, entries []DeletionEntry) error {
 	for _, entry := range entries {
 		url, exists := st.db[entry.Hash]
