@@ -7,7 +7,6 @@ on:
       - main
 
 jobs:
-
   branchtest:
     runs-on: ubuntu-latest
 
@@ -59,7 +58,7 @@ jobs:
       - name: Build server binary
         run: |
           cd cmd/shortener
-          go build -o shortener
+          go build -o shortener -buildvcs=false
 
       - name: "Code increment #1"
         if: |
