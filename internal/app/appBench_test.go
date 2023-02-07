@@ -33,6 +33,6 @@ func BenchmarkSaveUrl(b *testing.B) {
 	a := app.InitApp(st, cfg)
 
 	for i := 0; i < b.N; i++ {
-		a.SaveURL(GenURL(), "test", context.Background())
+		a.SaveURL(context.Background(), GenURL(), "test")
 	}
 }

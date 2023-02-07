@@ -60,7 +60,7 @@ func (app *App) deletionConsumer(ch chan storage.DeletionEntry) {
 	}
 }
 
-func (app *App) SaveURL(rawURL, UID string, ctx context.Context) (string, error) {
+func (app *App) SaveURL(ctx context.Context, rawURL, UID string) (string, error) {
 	_, err := url.ParseRequestURI(rawURL)
 	if err != nil {
 		return rawURL, err
