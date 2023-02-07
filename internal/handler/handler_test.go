@@ -12,6 +12,7 @@ import (
 	"github.com/T-V-N/gourlshortener/internal/app"
 	"github.com/T-V-N/gourlshortener/internal/config"
 	"github.com/T-V-N/gourlshortener/internal/handler"
+	"github.com/T-V-N/gourlshortener/internal/middleware/auth"
 	"github.com/T-V-N/gourlshortener/internal/storage"
 	"github.com/caarlos0/env/v6"
 
@@ -112,10 +113,18 @@ func Test_HandlerGetURL(t *testing.T) {
 				location:   "",
 			},
 		},
+		{
+			name:  "deleted link",
+			param: "16358727",
+			want: want{
+				statusCode: http.StatusGone,
+				location:   "",
+			},
+		},
 	}
 
 	cfg, _ := InitTestConfig()
-	st := storage.InitStorage(map[string]storage.URL{"e62e2446": {UID: "", ShortURL: "e62e2446", URL: "https://youtube.com"}}, cfg)
+	st := storage.InitStorage(map[string]storage.URL{"e62e2446": {UID: "", ShortURL: "e62e2446", URL: "https://youtube.com"}, "16358727": {UID: "", ShortURL: "16358727", URL: "https://youttube.com", IsDeleted: true}}, cfg)
 	a := app.InitApp(st, cfg)
 	hn := handler.InitHandler(a)
 
@@ -146,12 +155,14 @@ func Test_HandlerShortenURL(t *testing.T) {
 
 	tests := []struct {
 		name string
-		body []byte
+		body handler.URL
 		want want
 	}{
 		{
 			name: "regular link sent",
-			body: []byte("https://youtube.com"),
+			body: handler.URL{
+				URL: "https://youtube.com",
+			},
 			want: want{
 				statusCode: http.StatusCreated,
 				response:   "http://localhost:8080/e62e2446",
@@ -159,18 +170,22 @@ func Test_HandlerShortenURL(t *testing.T) {
 		},
 		{
 			name: "Wrong URL passed",
-			body: []byte(""),
+			body: handler.URL{
+				URL: "",
+			},
 			want: want{
 				statusCode: http.StatusBadRequest,
-				response:   "Wrong URL passed\n",
+				response:   "",
 			},
 		},
 		{
 			name: "Incorrect URL passed",
-			body: []byte("ht_t_p://google.com"),
+			body: handler.URL{
+				URL: "ht_t_p://google.com",
+			},
 			want: want{
 				statusCode: http.StatusBadRequest,
-				response:   "Wrong URL passed\n",
+				response:   "",
 			},
 		},
 	}
@@ -182,13 +197,20 @@ func Test_HandlerShortenURL(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			request := httptest.NewRequest(http.MethodPost, "/", bytes.NewBuffer(tt.body))
-			w := httptest.NewRecorder()
-			hn.HandlePostURL(w, request)
-			resBody := w.Body.Bytes()
+			body := bytes.NewBuffer([]byte{})
+			assert.NoError(t, json.NewEncoder(body).Encode(tt.body))
 
-			assert.Equal(t, tt.want.response, string(resBody))
-			assert.Equal(t, tt.want.statusCode, w.Code)
+			request := httptest.NewRequest(http.MethodPost, "/", body)
+			w := httptest.NewRecorder()
+			hn.HandleShortenURL(w, request)
+
+			response := handler.ShortenResult{}
+			_ = json.NewDecoder(w.Body).Decode(&response)
+
+			w.Result().Body.Close()
+
+			assert.Equal(t, tt.want.response, response.Result)
+			assert.Equal(t, tt.want.statusCode, w.Result().StatusCode)
 		})
 	}
 }
@@ -241,6 +263,58 @@ func Test_HandleShortenBatchURL(t *testing.T) {
 			for i, el := range resp {
 				assert.Equal(t, tt.want.response[i].ShortURL, el.ShortURL)
 			}
+		})
+	}
+}
+
+func Test_HandleDeleteListURL(t *testing.T) {
+	type want struct {
+		response   []storage.BatchURL
+		statusCode int
+	}
+
+	tests := []struct {
+		name string
+		body []string
+		want want
+	}{
+		{
+			name: "Sent some hashes",
+			body: []string{"AABBCC", "BBCCDD", "YYXXYY"},
+			want: want{
+				statusCode: http.StatusAccepted,
+				response:   []storage.BatchURL{},
+			},
+		}, {
+			name: "Sent no hashes",
+			body: []string{},
+			want: want{
+				statusCode: http.StatusBadRequest,
+				response:   []storage.BatchURL{},
+			},
+		},
+	}
+
+	cfg, _ := InitTestConfig()
+	st := storage.InitStorage(map[string]storage.URL{}, cfg)
+	app := app.InitApp(st, cfg)
+	hn := handler.InitHandler(app)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			body := bytes.NewBuffer([]byte{})
+			json.NewEncoder(body).Encode(tt.body)
+			request := httptest.NewRequest(http.MethodDelete, "/api/user/urls", body)
+			request = request.WithContext(context.WithValue(request.Context(), auth.UIDKey{}, "user"))
+
+			w := httptest.NewRecorder()
+
+			hn.HandleDeleteListURL(w, request)
+
+			res := w.Result()
+			res.Body.Close()
+
+			assert.Equal(t, tt.want.statusCode, res.StatusCode)
 		})
 	}
 }
