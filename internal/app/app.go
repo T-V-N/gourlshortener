@@ -57,15 +57,15 @@ func (app *App) deletionConsumer(ch chan storage.DeletionEntry) {
 }
 
 func (app *App) SaveURL(rawURL, UID string, ctx context.Context) (string, error) {
-	u, err := url.ParseRequestURI(rawURL)
+	_, err := url.ParseRequestURI(rawURL)
 	if err != nil {
 		return rawURL, err
 	}
 
-	hash := md5.Sum([]byte(u.String()))
+	hash := md5.Sum([]byte(rawURL))
 	stringHash := hex.EncodeToString(hash[:4])
 
-	err = app.DB.SaveURL(ctx, u.String(), UID, stringHash)
+	err = app.DB.SaveURL(ctx, rawURL, UID, stringHash)
 
 	if err != nil {
 		return stringHash, err
