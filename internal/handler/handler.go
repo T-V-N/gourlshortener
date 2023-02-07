@@ -276,6 +276,11 @@ func (h *Handler) HandleDeleteListURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(rawHashes) == 0 {
+		http.Error(w, "No hashes to delete", http.StatusBadRequest)
+		return
+	}
+
 	err = h.app.DeleteListURL(ctx, rawHashes, uid.(string))
 
 	if err != nil {
