@@ -60,17 +60,16 @@ func (app *App) deletionConsumer(ch chan storage.DeletionEntry) {
 	}
 }
 
-// SaveURL tries to parse rawURL and if it's ok saves it binding to a user with UID
-func (app *App) SaveURL(ctx context.Context, rawURL, UID string) (string, error) {
-	u, err := url.ParseRequestURI(rawURL)
+func (app *App) SaveURL(rawURL, UID string, ctx context.Context) (string, error) {
+	_, err := url.ParseRequestURI(rawURL)
 	if err != nil {
 		return rawURL, err
 	}
 
-	hash := md5.Sum([]byte(u.String()))
+	hash := md5.Sum([]byte(rawURL))
 	stringHash := hex.EncodeToString(hash[:4])
 
-	err = app.DB.SaveURL(ctx, u.String(), UID, stringHash)
+	err = app.DB.SaveURL(ctx, rawURL, UID, stringHash)
 
 	if err != nil {
 		return stringHash, err
