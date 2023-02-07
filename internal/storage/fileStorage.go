@@ -132,6 +132,7 @@ func (st *FileStorage) BatchSaveURL(ctx context.Context, urls []URL) error {
 	return nil
 }
 
+// KillConn is a dummy fn here to comply with the storage interface
 func (st *FileStorage) KillConn() error {
 	return nil
 }

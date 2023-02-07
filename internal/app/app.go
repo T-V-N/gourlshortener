@@ -60,6 +60,7 @@ func (app *App) deletionConsumer(ch chan storage.DeletionEntry) {
 	}
 }
 
+// SaveURL parses a rawURL string, creates short handle (stripped md5 hash of the link) and saves into a storage
 func (app *App) SaveURL(ctx context.Context, rawURL, UID string) (string, error) {
 	_, err := url.ParseRequestURI(rawURL)
 	if err != nil {

@@ -11,6 +11,7 @@ import (
 	"github.com/T-V-N/gourlshortener/internal/config"
 )
 
+// UIDKey ensures a user UID will be safe in the user context and won't be re-written by other layers
 type UIDKey struct{}
 
 func generateRandom(size int) ([]byte, error) {
@@ -57,6 +58,9 @@ func generateCookie(key string) (c *http.Cookie, err error) {
 
 }
 
+// InitAuth creates a MW that parses an incoming request's cookie and tries to extract UID stored in the extracted data.
+// In case there is no cookie available or it is available but invalid, the auth mw generates a new UID and cookie and sets it to the
+// Context.
 func InitAuth(cfg *config.Config) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
