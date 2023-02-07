@@ -207,10 +207,11 @@ func Test_HandlerShortenURL(t *testing.T) {
 			response := handler.ShortenResult{}
 			_ = json.NewDecoder(w.Body).Decode(&response)
 
-			w.Result().Body.Close()
+			res := w.Result()
+			res.Body.Close()
 
 			assert.Equal(t, tt.want.response, response.Result)
-			assert.Equal(t, tt.want.statusCode, w.Result().StatusCode)
+			assert.Equal(t, tt.want.statusCode, res.StatusCode)
 		})
 	}
 }
