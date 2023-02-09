@@ -1,3 +1,4 @@
+// Package gzip allows server to handle gzipped requests
 package gzip
 
 import (

@@ -30,7 +30,6 @@ func InitTestConfig() (*config.Config, error) {
 	return cfg, nil
 }
 
-var authH http.Handler
 var rawCookie, respHash string
 
 func Test_AuthHandler(t *testing.T) {

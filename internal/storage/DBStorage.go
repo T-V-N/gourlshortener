@@ -1,4 +1,4 @@
-// Package contains different implementations of URL storage
+// Package storage contains different implementations of URL storage
 package storage
 
 import (

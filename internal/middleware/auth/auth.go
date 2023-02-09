@@ -1,3 +1,4 @@
+// Package auth allows server to handle requests using auth middleware which automatically checks users by request cookie and handles all related stuff ;)
 package auth
 
 import (
