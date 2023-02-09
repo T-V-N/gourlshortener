@@ -8,6 +8,7 @@ import (
 	"golang.org/x/tools/go/analysis"
 )
 
+// ExitAnalyzer implements Analyzer interface so as to make it possible to use it in multichecker
 var ExitAnalyzer = &analysis.Analyzer{
 	Name: "ExitAnalyzer",
 	Doc:  "Usage of os.Exit in the main package is banned",
