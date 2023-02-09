@@ -1,4 +1,4 @@
-// App is responsible for the business logic of the service
+// Package app is responsible for the business logic of the service
 package app
 
 import (
@@ -20,15 +20,16 @@ type App struct {
 	deleteChan chan storage.DeletionEntry // channel used by an URL deletion goroutine
 }
 
-// InitApp creates and returns an application from st storage and cfg config.
-// Also inits a deletion channel and runs a deletion goroutine
-func InitApp(st storage.Storage, cfg *config.Config) *App {
-	delChan := make(chan storage.DeletionEntry)
-	app := &App{st, cfg, delChan}
-
-	go app.deletionConsumer(delChan)
-
+// NewApp creates and returns an application from st storage and cfg config.
+func NewApp(st storage.Storage, cfg *config.Config) *App {
+	app := &App{DB: st, Config: cfg}
 	return app
+}
+
+// Init inits an app: creates a deletion channel and starts a deletion goroutine
+func (a *App) Init() {
+	delChan := make(chan storage.DeletionEntry)
+	go a.deletionConsumer(delChan)
 }
 
 func (app *App) deletionConsumer(ch chan storage.DeletionEntry) {

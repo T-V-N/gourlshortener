@@ -69,8 +69,9 @@ func Test_HandlerPostURL(t *testing.T) {
 	}
 	cfg, _ := InitTestConfig()
 	st := storage.InitStorage(map[string]storage.URL{}, cfg)
-	a := app.InitApp(st, cfg)
-	hn := handler.InitHandler(a)
+	app := app.NewApp(st, cfg)
+	app.Init()
+	hn := handler.InitHandler(app)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -125,8 +126,9 @@ func Test_HandlerGetURL(t *testing.T) {
 
 	cfg, _ := InitTestConfig()
 	st := storage.InitStorage(map[string]storage.URL{"e62e2446": {UID: "", ShortURL: "e62e2446", URL: "https://youtube.com"}, "16358727": {UID: "", ShortURL: "16358727", URL: "https://youttube.com", IsDeleted: true}}, cfg)
-	a := app.InitApp(st, cfg)
-	hn := handler.InitHandler(a)
+	app := app.NewApp(st, cfg)
+	app.Init()
+	hn := handler.InitHandler(app)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -192,7 +194,8 @@ func Test_HandlerShortenURL(t *testing.T) {
 
 	cfg, _ := InitTestConfig()
 	st := storage.InitStorage(map[string]storage.URL{}, cfg)
-	app := app.InitApp(st, cfg)
+	app := app.NewApp(st, cfg)
+	app.Init()
 	hn := handler.InitHandler(app)
 
 	for _, tt := range tests {
@@ -245,7 +248,8 @@ func Test_HandleShortenBatchURL(t *testing.T) {
 
 	cfg, _ := InitTestConfig()
 	st := storage.InitStorage(map[string]storage.URL{}, cfg)
-	app := app.InitApp(st, cfg)
+	app := app.NewApp(st, cfg)
+	app.Init()
 	hn := handler.InitHandler(app)
 
 	for _, tt := range tests {
@@ -298,7 +302,8 @@ func Test_HandleDeleteListURL(t *testing.T) {
 
 	cfg, _ := InitTestConfig()
 	st := storage.InitStorage(map[string]storage.URL{}, cfg)
-	app := app.InitApp(st, cfg)
+	app := app.NewApp(st, cfg)
+	app.Init()
 	hn := handler.InitHandler(app)
 
 	for _, tt := range tests {

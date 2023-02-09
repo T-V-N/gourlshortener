@@ -30,7 +30,8 @@ func GenURL() string {
 func BenchmarkSaveUrl(b *testing.B) {
 	cfg := &config.Config{}
 	st := storage.InitStorage(map[string]storage.URL{}, cfg)
-	a := app.InitApp(st, cfg)
+	a := app.NewApp(st, cfg)
+	a.Init()
 
 	for i := 0; i < b.N; i++ {
 		a.SaveURL(context.Background(), GenURL(), "test")

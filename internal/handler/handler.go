@@ -1,4 +1,4 @@
-// Those are the handlers related to the URL shortener service
+// Package handler stores handlers used to serve HTTP-requests
 // <3
 package handler
 

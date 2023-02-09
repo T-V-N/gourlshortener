@@ -23,7 +23,8 @@ func main() {
 	}
 
 	st := storage.InitStorage(map[string]storage.URL{}, cfg)
-	a := app.InitApp(st, cfg)
+	a := app.NewApp(st, cfg)
+	a.Init()
 	h := handler.InitHandler(a)
 	authMw := auth.InitAuth(cfg)
 

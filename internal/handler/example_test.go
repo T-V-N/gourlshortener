@@ -18,7 +18,8 @@ func Example() {
 
 	cfg, _ := InitTestConfig()
 	st := storage.InitStorage(map[string]storage.URL{}, cfg)
-	a := app.InitApp(st, cfg)
+	a := app.NewApp(st, cfg)
+	a.Init()
 	hn := handler.InitHandler(a)
 
 	request := httptest.NewRequest(http.MethodPost, "/", bytes.NewBuffer([]byte(link)))
