@@ -1,3 +1,4 @@
+// Package contains different implementations of URL storage
 package storage
 
 import (
@@ -9,11 +10,14 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// DBStorage is for PGSQL database connection
 type DBStorage struct {
-	conn *pgxpool.Pool
-	cfg  config.Config
+	conn *pgxpool.Pool // connection pool for performing db requests
+	cfg  config.Config // config containing dsn link
 }
 
+// InitDBStorage inits a DB storage using cfg config
+// Creates a URL schema if it doesn't exist
 func InitDBStorage(cfg *config.Config) (*DBStorage, error) {
 	conn, err := pgxpool.New(context.Background(), cfg.DatabaseDSN)
 	if err != nil {
@@ -38,6 +42,7 @@ func InitDBStorage(cfg *config.Config) (*DBStorage, error) {
 	return &DBStorage{conn, *cfg}, nil
 }
 
+// SaveURL performs SQL request saving url with hash binding it to a user with certain uid
 func (db *DBStorage) SaveURL(ctx context.Context, url, uid, hash string) error {
 	sqlStatement := `
 	INSERT INTO urls (user_uid, url_hash, original_url)
@@ -52,6 +57,7 @@ func (db *DBStorage) SaveURL(ctx context.Context, url, uid, hash string) error {
 	return nil
 }
 
+// GetURL returns an URL bound to a hash passed
 func (db *DBStorage) GetURL(ctx context.Context, hash string) (URL, error) {
 	row := db.conn.QueryRow(ctx, "Select * from urls where url_hash = $1", hash)
 
@@ -65,6 +71,7 @@ func (db *DBStorage) GetURL(ctx context.Context, hash string) (URL, error) {
 	return u, nil
 }
 
+// GetUrlsByUID returns a list of URLs belonging to a given user
 func (db *DBStorage) GetUrlsByUID(ctx context.Context, uid string) ([]URL, error) {
 	urls := make([]URL, 0)
 
@@ -94,6 +101,7 @@ func (db *DBStorage) GetUrlsByUID(ctx context.Context, uid string) ([]URL, error
 	return urls, nil
 }
 
+// IsAlive returns true if db connection is alive, false otherwise
 func (db *DBStorage) IsAlive(ctx context.Context) (bool, error) {
 	err := db.conn.Ping(ctx)
 
@@ -104,6 +112,7 @@ func (db *DBStorage) IsAlive(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
+// BatchSaveURL saves a list of URLs to a db
 func (db *DBStorage) BatchSaveURL(ctx context.Context, urls []URL) error {
 	tx, err := db.conn.Begin(ctx)
 	if err != nil {
@@ -126,11 +135,13 @@ func (db *DBStorage) BatchSaveURL(ctx context.Context, urls []URL) error {
 	return tx.Commit(ctx)
 }
 
+// KillConn gracefully stops a db connection
 func (db *DBStorage) KillConn() error {
 	db.conn.Close()
 	return nil
 }
 
+// DeleteURLs deletes URLs from the DB (not actually removing them, but marking as deleted)
 func (db *DBStorage) DeleteURLs(ctx context.Context, entries []DeletionEntry) error {
 	b := pgx.Batch{}
 	for _, e := range entries {

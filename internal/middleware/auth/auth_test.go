@@ -36,8 +36,9 @@ var rawCookie, respHash string
 func Test_AuthHandler(t *testing.T) {
 	cfg, _ := InitTestConfig()
 	st := storage.InitStorage(map[string]storage.URL{}, cfg)
-	a := app.InitApp(st, cfg)
-	hn := handler.InitHandler(a)
+	app := app.NewApp(st, cfg)
+	app.Init()
+	hn := handler.InitHandler(app)
 	authH := auth.InitAuth(cfg)
 
 	t.Run("request without cookie, should get a new cookie", func(t *testing.T) {

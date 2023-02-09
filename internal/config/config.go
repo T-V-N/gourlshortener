@@ -1,3 +1,4 @@
+// Package config containing necessary env set and init for the related service
 package config
 
 import (
@@ -7,14 +8,18 @@ import (
 	"github.com/caarlos0/env/v6"
 )
 
+// Config for the service
 type Config struct {
-	BaseURL         string `env:"BASE_URL" envDefault:"http://localhost:8080"`
-	ServerAddress   string `env:"SERVER_ADDRESS" envDefault:":8080"`
-	FileStoragePath string `env:"FILE_STORAGE_PATH"`
-	SecretKey       string `env:"SECRET_KEY" envDefault:"hello"`
-	DatabaseDSN     string `env:"DATABASE_DSN"`
+	BaseURL         string `env:"BASE_URL" envDefault:"http://localhost:8080"` // URL where server will be started
+	ServerAddress   string `env:"SERVER_ADDRESS" envDefault:":8080"`           // Server port
+	FileStoragePath string `env:"FILE_STORAGE_PATH"`                           // Path to a file which will be used as a storage
+	SecretKey       string `env:"SECRET_KEY" envDefault:"hello"`               // Secret for hashing ops
+	DatabaseDSN     string `env:"DATABASE_DSN"`                                // Database connection string for DB-style storage
 }
 
+// Init tries to parse os.env and flags passed to the service run command.
+// Flags have priority over os envs.
+// Then in returns a config ready for usage by other service layers.
 func Init() (*Config, error) {
 	cfg := &Config{}
 	err := env.Parse(cfg)

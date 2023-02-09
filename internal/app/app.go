@@ -1,3 +1,4 @@
+// Package app is responsible for the business logic of the service
 package app
 
 import (
@@ -12,24 +13,30 @@ import (
 	"github.com/T-V-N/gourlshortener/internal/storage"
 )
 
+// App struct contains all the necessary objects for app to perform storage CRUD and the business logic proccess
 type App struct {
-	DB         storage.Storage
-	Config     *config.Config
-	deleteChan chan storage.DeletionEntry
+	DB         storage.Storage            // file, db or memory-storage
+	Config     *config.Config             // set of configs
+	deleteChan chan storage.DeletionEntry // channel used by an URL deletion goroutine
 }
 
-func InitApp(st storage.Storage, cfg *config.Config) *App {
+// NewApp creates and returns an application from st storage and cfg config.
+func NewApp(st storage.Storage, cfg *config.Config) *App {
+	app := &App{DB: st, Config: cfg}
+	return app
+}
+
+// Init inits an app: creates a deletion channel and starts a deletion goroutine
+func (app *App) Init() {
 	delChan := make(chan storage.DeletionEntry)
-	app := &App{st, cfg, delChan}
+	app.deleteChan = delChan
 
 	go app.deletionConsumer(delChan)
-
-	return app
 }
 
 func (app *App) deletionConsumer(ch chan storage.DeletionEntry) {
 	buff := []storage.DeletionEntry{}
-	ticker := time.NewTicker(30 * time.Second)
+	ticker := time.NewTicker(10 * time.Second)
 	for {
 		select {
 		case el := <-ch:
@@ -56,16 +63,17 @@ func (app *App) deletionConsumer(ch chan storage.DeletionEntry) {
 	}
 }
 
-func (app *App) SaveURL(rawURL, UID string, ctx context.Context) (string, error) {
-	u, err := url.ParseRequestURI(rawURL)
+// SaveURL parses a rawURL string, creates short handle (stripped md5 hash of the link) and saves into a storage
+func (app *App) SaveURL(ctx context.Context, rawURL, UID string) (string, error) {
+	_, err := url.ParseRequestURI(rawURL)
 	if err != nil {
 		return rawURL, err
 	}
 
-	hash := md5.Sum([]byte(u.String()))
+	hash := md5.Sum([]byte(rawURL))
 	stringHash := hex.EncodeToString(hash[:4])
 
-	err = app.DB.SaveURL(ctx, u.String(), UID, stringHash)
+	err = app.DB.SaveURL(ctx, rawURL, UID, stringHash)
 
 	if err != nil {
 		return stringHash, err
@@ -74,7 +82,8 @@ func (app *App) SaveURL(rawURL, UID string, ctx context.Context) (string, error)
 	return app.Config.BaseURL + "/" + stringHash, nil
 }
 
-func (app *App) GetURL(id string, ctx context.Context) (storage.URL, error) {
+// GetURL searches for and URL having id and if found returns it
+func (app *App) GetURL(ctx context.Context, id string) (storage.URL, error) {
 	u, err := app.DB.GetURL(ctx, id)
 
 	if err != nil {
@@ -84,6 +93,7 @@ func (app *App) GetURL(id string, ctx context.Context) (storage.URL, error) {
 	return u, nil
 }
 
+// GetURLByUID tries to search all URLs bound to a user with UID and returns a list of URLs
 func (app *App) GetURLByUID(uid string, ctx context.Context) ([]storage.URL, error) {
 	u, err := app.DB.GetUrlsByUID(ctx, uid)
 
@@ -98,6 +108,7 @@ func (app *App) GetURLByUID(uid string, ctx context.Context) ([]storage.URL, err
 	return u, nil
 }
 
+// PingStorage just checks whether the app storage connection is alive or not
 func (app *App) PingStorage(ctx context.Context) error {
 	_, err := app.DB.IsAlive(ctx)
 	if err != nil {
@@ -107,6 +118,7 @@ func (app *App) PingStorage(ctx context.Context) error {
 	return nil
 }
 
+// BatchSaveURL takes a list of URLs and saves them binding to a user with UID
 func (app *App) BatchSaveURL(ctx context.Context, obj []storage.BatchURL, uid string) ([]storage.BatchURL, error) {
 	urls := []storage.URL{}
 	responseURLs := []storage.BatchURL{}
@@ -131,6 +143,7 @@ func (app *App) BatchSaveURL(ctx context.Context, obj []storage.BatchURL, uid st
 	return responseURLs, nil
 }
 
+// DeleteListURL stages rawHashes list containing hashes of urls for deletion.
 func (app *App) DeleteListURL(ctx context.Context, rawHashes []string, uid string) error {
 	go func() {
 		for _, rawHash := range rawHashes {

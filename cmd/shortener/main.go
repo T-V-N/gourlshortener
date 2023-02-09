@@ -12,8 +12,8 @@ import (
 
 	"github.com/T-V-N/gourlshortener/internal/storage"
 
-	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 func main() {
@@ -23,14 +23,17 @@ func main() {
 	}
 
 	st := storage.InitStorage(map[string]storage.URL{}, cfg)
-	a := app.InitApp(st, cfg)
+	a := app.NewApp(st, cfg)
+	a.Init()
 	h := handler.InitHandler(a)
 	authMw := auth.InitAuth(cfg)
 
 	router := chi.NewRouter()
+
 	router.Use(gzip.GzipHandle)
 	router.Use(authMw)
 	router.Use(middleware.Compress(5))
+	router.Mount("/debug", middleware.Profiler())
 	router.Get("/{urlHash}", h.HandleGetURL)
 	router.Post("/", h.HandlePostURL)
 	router.Post("/api/shorten", h.HandleShortenURL)
@@ -40,5 +43,6 @@ func main() {
 	router.Get("/ping", h.HandlePing)
 
 	log.Panic(http.ListenAndServe(a.Config.ServerAddress, router))
+
 	defer st.KillConn()
 }
