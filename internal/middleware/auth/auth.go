@@ -65,8 +65,8 @@ func generateCookie(key string) (c *http.Cookie, err error) {
 func InitAuth(cfg *config.Config) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			cookie, err := r.Cookie("auth_token")
-			if err != nil {
+			cookie, cookieErr := r.Cookie("auth_token")
+			if cookieErr != nil {
 				newCookie, err := generateCookie(cfg.SecretKey)
 				if err != nil {
 					http.Error(w, "Something went wrong", http.StatusBadRequest)

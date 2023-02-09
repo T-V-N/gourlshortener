@@ -14,8 +14,8 @@
 // assign, httpresponse, printf, shadow, structtag
 //
 // 4. Two open-source analyzers:
-// errcheck by kisielk
-// maligned by mdempsky
+// inefassign by gordonklaus Detect ineffectual assignments in Go code. An assignment is ineffectual if the variable assigned is not thereafter used.
+// maligned by mdempsky which detects structs that would take less memory if their fields were sorted.
 //
 // 5. A custom analyzer which ensures there is no os.Exit() calls in the main func of the main package of the linted files
 //
@@ -37,8 +37,8 @@ import (
 
 	"github.com/T-V-N/gourlshortener/cmd/staticlint/analyzer"
 	"github.com/T-V-N/gourlshortener/cmd/staticlint/config"
+	"github.com/gordonklaus/ineffassign/pkg/ineffassign"
 
-	"github.com/kisielk/errcheck/errcheck"
 	"github.com/mdempsky/maligned/passes/maligned"
 
 	"honnef.co/go/tools/quickfix"
@@ -56,7 +56,7 @@ func main() {
 
 	checks := []*analysis.Analyzer{
 
-		errcheck.Analyzer,
+		ineffassign.Analyzer,
 		maligned.Analyzer,
 
 		printf.Analyzer,
@@ -91,5 +91,7 @@ func main() {
 		}
 	}
 
-	multichecker.Main()
+	multichecker.Main(
+		checks...,
+	)
 }
