@@ -27,9 +27,9 @@ func NewApp(st storage.Storage, cfg *config.Config) *App {
 }
 
 // Init inits an app: creates a deletion channel and starts a deletion goroutine
-func (a *App) Init() {
+func (app *App) Init() {
 	delChan := make(chan storage.DeletionEntry)
-	go a.deletionConsumer(delChan)
+	go app.deletionConsumer(delChan)
 }
 
 func (app *App) deletionConsumer(ch chan storage.DeletionEntry) {
