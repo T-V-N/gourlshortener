@@ -1,4 +1,4 @@
-// Config package containing necessary env set and init for the related service
+// Package config containing necessary env set and init for the related service
 package config
 
 import (
