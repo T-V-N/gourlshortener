@@ -1,3 +1,5 @@
+// Analyzer is an analyzer which implements analysis.Analyzer interface
+// it ensures there are no os.Exit calls in the main func of the main package
 package analyzer
 
 import (
