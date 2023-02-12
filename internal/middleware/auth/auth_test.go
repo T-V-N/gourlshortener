@@ -22,6 +22,7 @@ import (
 func InitTestConfig() (*config.Config, error) {
 	cfg := &config.Config{}
 	err := env.Parse(cfg)
+	cfg.DatabaseDSN = ""
 
 	if err != nil {
 		return nil, fmt.Errorf("error: %w", err)
