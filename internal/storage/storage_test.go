@@ -101,7 +101,7 @@ func Test_FileStorage(t *testing.T) {
 
 		err = st.KillConn()
 		assert.Nil(t, err, "file storage must always be killable")
-		ok, err := st.IsAlive(context.Background())
+		ok, _ := st.IsAlive(context.Background())
 		assert.True(t, ok, "file storage must always be alive")
 	})
 
@@ -149,6 +149,10 @@ func Test_DB(t *testing.T) {
 	cfg, _ := config.Init()
 
 	t.Run("connect db and ensure its ready and gracefully stopable", func(t *testing.T) {
+		if cfg.DatabaseDSN == "" {
+			t.Skip("No test db dsn provided")
+		}
+
 		st, err := storage.InitDBStorage(cfg)
 
 		assert.Nil(t, err, "connection must be made")
@@ -163,6 +167,9 @@ func Test_DB(t *testing.T) {
 	})
 
 	t.Run("Create, get, delete batch test", func(t *testing.T) {
+		if cfg.DatabaseDSN == "" {
+			t.Skip("No test db dsn provided")
+		}
 		st, err := storage.InitDBStorage(cfg)
 
 		randBytes, _ := auth.GenerateRandom(4)
