@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -15,6 +16,32 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
+
+var (
+	buildVersion string
+	buildDate    string
+	buildCommit  string
+)
+
+func outputBuildInfo() {
+	if buildVersion == "" {
+		fmt.Printf("Build version: %v", "N/A")
+	} else {
+		fmt.Printf("Build version: %v", buildVersion)
+	}
+
+	if buildDate == "" {
+		fmt.Printf("Build date: %v", "N/A")
+	} else {
+		fmt.Printf("Build date: %v", buildDate)
+	}
+
+	if buildCommit == "" {
+		fmt.Printf("Build commit: %v", "N/A")
+	} else {
+		fmt.Printf("Build commit: %v", buildCommit)
+	}
+}
 
 func main() {
 	cfg, err := config.Init()
@@ -42,6 +69,7 @@ func main() {
 	router.Post("/api/shorten/batch", h.HandleShortenBatchURL)
 	router.Get("/ping", h.HandlePing)
 
+	outputBuildInfo()
 	log.Panic(http.ListenAndServe(a.Config.ServerAddress, router))
 
 	defer st.KillConn()
