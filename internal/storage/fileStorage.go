@@ -22,7 +22,11 @@ type FileStorage struct {
 func InitFileStorage(data map[string]URL, cfg *config.Config) *FileStorage {
 	if cfg.FileStoragePath == "" {
 		if data == nil {
-			return &FileStorage{make(map[string]URL), *cfg}
+			// Нужно описание полей при инициализации. Поправил для примера
+			return &FileStorage{
+				db:  make(map[string]URL),
+				cfg: *cfg,
+			}
 		}
 
 		return &FileStorage{data, *cfg}
@@ -46,6 +50,7 @@ func InitFileStorage(data map[string]URL, cfg *config.Config) *FileStorage {
 
 	defer file.Close()
 
+	// явное указание полей
 	return &FileStorage{data, *cfg}
 }
 
@@ -53,12 +58,21 @@ func InitFileStorage(data map[string]URL, cfg *config.Config) *FileStorage {
 func (st *FileStorage) SaveURL(ctx context.Context, url, uid, hash string) error {
 	st.db[hash] = URL{uid, hash, url, false}
 
+	/*
+		Что мне здесь не нравится: это открытие файла на каждое сохранение урла.
+		Нужно сделать это в виде "файл открыли -- пишем на каждое сохранение -- закрываем при выходе"
+		Схема ниже очень неэффективна.
+	*/
+
+	// Я бы инвертировал это условие. Если файла нет, то сразу выйти и всё.
 	if st.cfg.FileStoragePath != "" {
 		file, err := os.OpenFile(st.cfg.FileStoragePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o777)
+		// Говорить о том, что "мы хотим закрыть файл" нужно сразу же после того, как это файл открыли. По крайней мере, в этом примерe.
 		if err != nil {
 			return err
 		}
 
+		// явное указание полей
 		data, err := json.Marshal(&URL{uid, hash, url, false})
 		if err != nil {
 			return err
@@ -102,6 +116,7 @@ func (st *FileStorage) GetUrlsByUID(ctx context.Context, uid string) ([]URL, err
 // IsAlive checks whether if the file db is alive (always ok)
 func (st *FileStorage) IsAlive(context.Context) (bool, error) {
 	// file storage always alive
+	// Лучше просто вернуть нил
 	return true, nil
 }
 
@@ -134,6 +149,7 @@ func (st *FileStorage) BatchSaveURL(ctx context.Context, urls []URL) error {
 
 // KillConn is a dummy fn here to comply with the storage interface
 func (st *FileStorage) KillConn() error {
+	// Почему убить соединение?) Это же явно что-то грубое. Лучше просто назвать `Close`
 	return nil
 }
 

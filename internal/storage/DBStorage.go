@@ -21,13 +21,14 @@ type DBStorage struct {
 func InitDBStorage(cfg *config.Config) (*DBStorage, error) {
 	conn, err := pgxpool.New(context.Background(), cfg.DatabaseDSN)
 	if err != nil {
+		// Я бы вынес этот лог на уровень инициализации
 		log.Printf("Unable to connect to database: %v\n", err.Error())
 		return nil, err
 	}
 
 	_, err = conn.Exec(context.Background(), `
-	CREATE TABLE IF NOT EXISTS 
-	URLS 
+	CREATE TABLE IF NOT EXISTS
+	URLS
 	(user_uid varchar, url_hash varchar, original_url varchar, is_deleted bool default false);
 
 	CREATE UNIQUE INDEX IF NOT EXISTS hash_index ON urls
@@ -149,6 +150,7 @@ func (db *DBStorage) DeleteURLs(ctx context.Context, entries []DeletionEntry) er
 	}
 
 	br := db.conn.SendBatch(context.Background(), &b)
+	// return br.Close()
 	err := br.Close()
 
 	if err != nil {
