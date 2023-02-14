@@ -62,6 +62,7 @@ func generateCookie(key string) (c *http.Cookie, err error) {
 // In case there is no cookie available or it is available but invalid, the auth mw generates a new UID and cookie and sets it to the
 // Context.
 func InitAuth(cfg *config.Config) func(next http.Handler) http.Handler {
+	// auth -> InitAuth -- возможно, стоит переименовать
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			cookie, err := r.Cookie("auth_token")

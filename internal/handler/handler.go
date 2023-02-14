@@ -59,7 +59,6 @@ func (h *Handler) HandleGetURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	url, err := h.app.GetURL(ctx, id)
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
