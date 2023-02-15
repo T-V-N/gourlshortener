@@ -29,7 +29,12 @@ func run(pass *analysis.Pass) (interface{}, error) {
 				}
 
 			case *ast.SelectorExpr:
-				if x.Sel.Name == "Exit" {
+				callerStruct, ok := x.X.(*ast.Ident)
+				if !ok {
+					return false
+				}
+
+				if x.Sel.Name == "Exit" && callerStruct.Name == "os" {
 					pass.Reportf(x.Pos(), "Usage of os.Exit in the main package is banned")
 				}
 			}
