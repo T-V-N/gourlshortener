@@ -22,6 +22,7 @@ import (
 func InitTestConfig() (*config.Config, error) {
 	cfg := &config.Config{}
 	err := env.Parse(cfg)
+	cfg.DatabaseDSN = ""
 
 	if err != nil {
 		return nil, fmt.Errorf("error: %w", err)
@@ -30,7 +31,6 @@ func InitTestConfig() (*config.Config, error) {
 	return cfg, nil
 }
 
-var authH http.Handler
 var rawCookie, respHash string
 
 func Test_AuthHandler(t *testing.T) {

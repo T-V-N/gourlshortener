@@ -28,5 +28,5 @@ func Example() {
 
 	resBody := w.Body.Bytes()
 
-	fmt.Print(resBody)
+	fmt.Print(string(resBody))
 }

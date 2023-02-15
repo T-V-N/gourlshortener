@@ -1,4 +1,4 @@
-// Package contains different implementations of URL storage
+// Package storage contains different implementations of URL storage
 package storage
 
 import (
@@ -75,7 +75,7 @@ func (db *DBStorage) GetURL(ctx context.Context, hash string) (URL, error) {
 func (db *DBStorage) GetUrlsByUID(ctx context.Context, uid string) ([]URL, error) {
 	urls := make([]URL, 0)
 
-	rows, err := db.conn.Query(ctx, "SELECT hash, original_url from urls where user_uid = $1", uid)
+	rows, err := db.conn.Query(ctx, "SELECT url_hash, original_url from urls where user_uid = $1 and is_deleted = false", uid)
 	if err != nil {
 		return nil, err
 	}
