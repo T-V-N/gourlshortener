@@ -17,11 +17,10 @@ import (
 )
 
 func InitFileTestConfig(withFile bool) (*config.Config, error) {
-	var cfg *config.Config
+	cfg := &config.Config{BaseURL: "http://localhost:8080", ServerAddress: ":8080", EnableHTTPS: false}
+
 	if withFile {
-		cfg = &config.Config{FileStoragePath: "./file"}
-	} else {
-		cfg = &config.Config{}
+		cfg.FileStoragePath = "./file"
 	}
 
 	err := env.Parse(cfg)

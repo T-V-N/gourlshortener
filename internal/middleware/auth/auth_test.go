@@ -20,7 +20,7 @@ import (
 )
 
 func InitTestConfig() (*config.Config, error) {
-	cfg := &config.Config{}
+	cfg := &config.Config{BaseURL: "http://localhost:8080", ServerAddress: ":8080", EnableHTTPS: false}
 	err := env.Parse(cfg)
 	cfg.DatabaseDSN = ""
 
