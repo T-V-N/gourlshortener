@@ -1,3 +1,4 @@
+// Package is for analyzer test only
 package main
 
 import "os"
