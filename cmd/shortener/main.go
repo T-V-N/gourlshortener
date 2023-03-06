@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -9,12 +10,39 @@ import (
 	"github.com/T-V-N/gourlshortener/internal/handler"
 	"github.com/T-V-N/gourlshortener/internal/middleware/auth"
 	"github.com/T-V-N/gourlshortener/internal/middleware/gzip"
+	"golang.org/x/crypto/acme/autocert"
 
 	"github.com/T-V-N/gourlshortener/internal/storage"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
+
+var (
+	buildVersion string
+	buildDate    string
+	buildCommit  string
+)
+
+func outputBuildInfo() {
+	if buildVersion == "" {
+		fmt.Printf("Build version: %v", "N/A")
+	} else {
+		fmt.Printf("Build version: %v", buildVersion)
+	}
+
+	if buildDate == "" {
+		fmt.Printf("Build date: %v", "N/A")
+	} else {
+		fmt.Printf("Build date: %v", buildDate)
+	}
+
+	if buildCommit == "" {
+		fmt.Printf("Build commit: %v", "N/A")
+	} else {
+		fmt.Printf("Build commit: %v", buildCommit)
+	}
+}
 
 func main() {
 	cfg, err := config.Init()
@@ -42,7 +70,25 @@ func main() {
 	router.Post("/api/shorten/batch", h.HandleShortenBatchURL)
 	router.Get("/ping", h.HandlePing)
 
-	log.Panic(http.ListenAndServe(a.Config.ServerAddress, router))
+	outputBuildInfo()
+
+	if cfg.EnableHTTPS {
+		manager := &autocert.Manager{
+			Cache:      autocert.DirCache("cache-dir"),
+			Prompt:     autocert.AcceptTOS,
+			HostPolicy: autocert.HostWhitelist("localhost"),
+		}
+
+		server := &http.Server{
+			Addr:      ":443",
+			Handler:   router,
+			TLSConfig: manager.TLSConfig(),
+		}
+
+		log.Panic(server.ListenAndServeTLS("", ""))
+	} else {
+		log.Panic(http.ListenAndServe(a.Config.ServerAddress, router))
+	}
 
 	defer st.KillConn()
 }
