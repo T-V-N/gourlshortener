@@ -14,7 +14,7 @@ import (
 // FileStorage is for file storage
 type FileStorage struct {
 	db  map[string]URL // db here is a simple map hash to url string
-	cfg config.Config  // config
+	Cfg config.Config  // config
 }
 
 // InitFileStorage inits a file storage using cfg config
@@ -53,8 +53,8 @@ func InitFileStorage(data map[string]URL, cfg *config.Config) *FileStorage {
 func (st *FileStorage) SaveURL(ctx context.Context, url, uid, hash string) error {
 	st.db[hash] = URL{uid, hash, url, false}
 
-	if st.cfg.FileStoragePath != "" {
-		file, err := os.OpenFile(st.cfg.FileStoragePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o777)
+	if st.Cfg.FileStoragePath != "" {
+		file, err := os.OpenFile(st.Cfg.FileStoragePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o777)
 		if err != nil {
 			return err
 		}
@@ -111,8 +111,8 @@ func (st *FileStorage) BatchSaveURL(ctx context.Context, urls []URL) error {
 		st.db[url.ShortURL] = URL{url.UID, url.ShortURL, url.URL, false}
 	}
 
-	if st.cfg.FileStoragePath != "" {
-		file, err := os.OpenFile(st.cfg.FileStoragePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o777)
+	if st.Cfg.FileStoragePath != "" {
+		file, err := os.OpenFile(st.Cfg.FileStoragePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o777)
 		if err != nil {
 			return err
 		}

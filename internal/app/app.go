@@ -18,11 +18,12 @@ type App struct {
 	DB         storage.Storage            // file, db or memory-storage
 	Config     *config.Config             // set of configs
 	deleteChan chan storage.DeletionEntry // channel used by an URL deletion goroutine
+	ctx        context.Context            // context used for graceful shutdown
 }
 
 // NewApp creates and returns an application from st storage and cfg config.
-func NewApp(st storage.Storage, cfg *config.Config) *App {
-	app := &App{DB: st, Config: cfg}
+func NewApp(ctx context.Context, st storage.Storage, cfg *config.Config) *App {
+	app := &App{ctx: ctx, DB: st, Config: cfg}
 	return app
 }
 
@@ -59,6 +60,14 @@ func (app *App) deletionConsumer(ch chan storage.DeletionEntry) {
 			}
 
 			buff = buff[:0]
+		case <-app.ctx.Done():
+			err := app.DB.DeleteURLs(context.Background(), buff)
+
+			if err != nil {
+				log.Println(err)
+			}
+
+			return
 		}
 	}
 }
