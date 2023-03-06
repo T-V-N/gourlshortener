@@ -2,6 +2,7 @@ package auth_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"fmt"
@@ -20,8 +21,9 @@ import (
 )
 
 func InitTestConfig() (*config.Config, error) {
-	cfg := &config.Config{}
+	cfg := &config.Config{BaseURL: "http://localhost:8080", ServerAddress: ":8080", EnableHTTPS: false}
 	err := env.Parse(cfg)
+	cfg.DatabaseDSN = ""
 
 	if err != nil {
 		return nil, fmt.Errorf("error: %w", err)
@@ -30,13 +32,12 @@ func InitTestConfig() (*config.Config, error) {
 	return cfg, nil
 }
 
-var authH http.Handler
 var rawCookie, respHash string
 
 func Test_AuthHandler(t *testing.T) {
 	cfg, _ := InitTestConfig()
 	st := storage.InitStorage(map[string]storage.URL{}, cfg)
-	app := app.NewApp(st, cfg)
+	app := app.NewApp(context.Background(), st, cfg)
 	app.Init()
 	hn := handler.InitHandler(app)
 	authH := auth.InitAuth(cfg)
