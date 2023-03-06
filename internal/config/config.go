@@ -27,8 +27,9 @@ func Init() (*Config, error) {
 	cfg := &Config{BaseURL: "http://localhost:8080", ServerAddress: ":8080", EnableHTTPS: false}
 
 	cfgPath := os.Getenv("CONFIG")
-	flag.StringVar(&cfgPath, "c", cfgPath, "Config file")
-	flag.Parse()
+	configFlag := flag.NewFlagSet("Only config", flag.ContinueOnError)
+	configFlag.StringVar(&cfgPath, "c", cfgPath, "Config file")
+	configFlag.Parse(os.Args[1:])
 
 	if cfgPath != "" {
 		fileCfg, err := parseFileConfig(cfgPath)
@@ -50,6 +51,7 @@ func Init() (*Config, error) {
 	flag.StringVar(&cfg.SecretKey, "k", cfg.SecretKey, "secret key")
 	flag.StringVar(&cfg.DatabaseDSN, "d", cfg.DatabaseDSN, "secret key")
 	flag.BoolVar(&cfg.EnableHTTPS, "s", cfg.EnableHTTPS, "flag enable HTTPS")
+	flag.StringVar(&cfgPath, "c", cfgPath, "Config file")
 
 	flag.Parse()
 
