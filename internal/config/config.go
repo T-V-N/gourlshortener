@@ -15,7 +15,7 @@ type Config struct {
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`                           // Path to a file which will be used as a storage
 	SecretKey       string `env:"SECRET_KEY" envDefault:"hello"`               // Secret for hashing ops
 	DatabaseDSN     string `env:"DATABASE_DSN"`                                // Database connection string for DB-style storage
-	EnableHTTPS     bool   `env:"ENABLE_HTTPS" envDefault:false`               // flag enables https
+	EnableHTTPS     bool   `env:"ENABLE_HTTPS" envDefault:"false"`             // flag enables https
 }
 
 // Init tries to parse os.env and flags passed to the service run command.
