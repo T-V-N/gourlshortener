@@ -10,6 +10,7 @@ import (
 	"github.com/T-V-N/gourlshortener/internal/handler"
 	"github.com/T-V-N/gourlshortener/internal/middleware/auth"
 	"github.com/T-V-N/gourlshortener/internal/middleware/gzip"
+	"golang.org/x/crypto/acme/autocert"
 
 	"github.com/T-V-N/gourlshortener/internal/storage"
 
@@ -70,7 +71,24 @@ func main() {
 	router.Get("/ping", h.HandlePing)
 
 	outputBuildInfo()
-	log.Panic(http.ListenAndServe(a.Config.ServerAddress, router))
+
+	if cfg.EnableHTTPS {
+		manager := &autocert.Manager{
+			Cache:      autocert.DirCache("cache-dir"),
+			Prompt:     autocert.AcceptTOS,
+			HostPolicy: autocert.HostWhitelist("localhost"),
+		}
+
+		server := &http.Server{
+			Addr:      ":443",
+			Handler:   router,
+			TLSConfig: manager.TLSConfig(),
+		}
+
+		log.Panic(server.ListenAndServeTLS("", ""))
+	} else {
+		log.Panic(http.ListenAndServe(a.Config.ServerAddress, router))
+	}
 
 	defer st.KillConn()
 }

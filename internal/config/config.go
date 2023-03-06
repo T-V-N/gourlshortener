@@ -15,6 +15,7 @@ type Config struct {
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`                           // Path to a file which will be used as a storage
 	SecretKey       string `env:"SECRET_KEY" envDefault:"hello"`               // Secret for hashing ops
 	DatabaseDSN     string `env:"DATABASE_DSN"`                                // Database connection string for DB-style storage
+	EnableHTTPS     bool   `env:"ENABLE_HTTPS" envDefault:false`               // flag enables https
 }
 
 // Init tries to parse os.env and flags passed to the service run command.
@@ -31,8 +32,10 @@ func Init() (*Config, error) {
 	flag.StringVar(&cfg.ServerAddress, "a", cfg.ServerAddress, "Server address")
 	flag.StringVar(&cfg.BaseURL, "b", cfg.BaseURL, "base url to use in strings")
 	flag.StringVar(&cfg.FileStoragePath, "f", cfg.FileStoragePath, "where to save db")
-	flag.StringVar(&cfg.SecretKey, "s", cfg.SecretKey, "secret key")
+	flag.StringVar(&cfg.SecretKey, "k", cfg.SecretKey, "secret key")
 	flag.StringVar(&cfg.DatabaseDSN, "d", cfg.DatabaseDSN, "secret key")
+	flag.BoolVar(&cfg.EnableHTTPS, "s", cfg.EnableHTTPS, "flag enable HTTPS")
+
 	flag.Parse()
 
 	return cfg, nil
