@@ -2,6 +2,7 @@ package auth_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"fmt"
@@ -36,7 +37,7 @@ var rawCookie, respHash string
 func Test_AuthHandler(t *testing.T) {
 	cfg, _ := InitTestConfig()
 	st := storage.InitStorage(map[string]storage.URL{}, cfg)
-	app := app.NewApp(st, cfg)
+	app := app.NewApp(context.Background(), st, cfg)
 	app.Init()
 	hn := handler.InitHandler(app)
 	authH := auth.InitAuth(cfg)

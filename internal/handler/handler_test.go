@@ -71,7 +71,7 @@ func Test_HandlerPostURL(t *testing.T) {
 	}
 	cfg, _ := InitTestConfig()
 	st := storage.InitStorage(map[string]storage.URL{}, cfg)
-	app := app.NewApp(st, cfg)
+	app := app.NewApp(context.Background(), st, cfg)
 	app.Init()
 	hn := handler.InitHandler(app)
 
@@ -128,7 +128,7 @@ func Test_HandlerGetURL(t *testing.T) {
 
 	cfg, _ := InitTestConfig()
 	st := storage.InitStorage(map[string]storage.URL{"e62e2446": {UID: "", ShortURL: "e62e2446", URL: "https://youtube.com"}, "16358727": {UID: "", ShortURL: "16358727", URL: "https://youttube.com", IsDeleted: true}}, cfg)
-	app := app.NewApp(st, cfg)
+	app := app.NewApp(context.Background(), st, cfg)
 	app.Init()
 	hn := handler.InitHandler(app)
 
@@ -196,7 +196,7 @@ func Test_HandlerShortenURL(t *testing.T) {
 
 	cfg, _ := InitTestConfig()
 	st := storage.InitStorage(map[string]storage.URL{}, cfg)
-	app := app.NewApp(st, cfg)
+	app := app.NewApp(context.Background(), st, cfg)
 	app.Init()
 	hn := handler.InitHandler(app)
 
@@ -250,7 +250,7 @@ func Test_HandleShortenBatchURL(t *testing.T) {
 
 	cfg, _ := InitTestConfig()
 	st := storage.InitStorage(map[string]storage.URL{}, cfg)
-	app := app.NewApp(st, cfg)
+	app := app.NewApp(context.Background(), st, cfg)
 	app.Init()
 	hn := handler.InitHandler(app)
 
@@ -304,7 +304,7 @@ func Test_HandleDeleteListURL(t *testing.T) {
 
 	cfg, _ := InitTestConfig()
 	st := storage.InitStorage(map[string]storage.URL{}, cfg)
-	app := app.NewApp(st, cfg)
+	app := app.NewApp(context.Background(), st, cfg)
 	app.Init()
 	hn := handler.InitHandler(app)
 

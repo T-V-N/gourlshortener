@@ -2,6 +2,7 @@ package handler_test
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -18,7 +19,7 @@ func Example() {
 
 	cfg, _ := InitTestConfig()
 	st := storage.InitStorage(map[string]storage.URL{}, cfg)
-	a := app.NewApp(st, cfg)
+	a := app.NewApp(context.Background(), st, cfg)
 	a.Init()
 	hn := handler.InitHandler(a)
 

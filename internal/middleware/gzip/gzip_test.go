@@ -3,6 +3,7 @@ package gzip_test
 import (
 	"bytes"
 	gzip "compress/gzip"
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -33,7 +34,7 @@ func InitTestConfig() (*config.Config, error) {
 func Test_GzipHandle(t *testing.T) {
 	cfg, _ := InitTestConfig()
 	st := storage.InitStorage(map[string]storage.URL{}, cfg)
-	app := app.NewApp(st, cfg)
+	app := app.NewApp(context.Background(), st, cfg)
 	app.Init()
 	hn := handler.InitHandler(app)
 
