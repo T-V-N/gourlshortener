@@ -326,3 +326,82 @@ func Test_HandleDeleteListURL(t *testing.T) {
 		})
 	}
 }
+
+func Test_HandleGetStats(t *testing.T) {
+	type want struct {
+		wantUsers  string
+		wantUrls   string
+		statusCode int
+	}
+
+	tests := []struct {
+		name          string
+		myIP          string
+		allowedSubnet string
+		db            map[string]storage.URL
+		want          want
+	}{
+		{
+			name:          "Allowed ip ok links",
+			myIP:          "240.192.2.2",
+			allowedSubnet: "240.192.2.0/24",
+			db: map[string]storage.URL{
+				"abc": {UID: "1", ShortURL: "abc", URL: "yandex.ru", IsDeleted: false},
+				"bcd": {UID: "2", ShortURL: "abc", URL: "yandex1.ru", IsDeleted: false},
+				"bca": {UID: "1", ShortURL: "abc", URL: "yandex2.ru", IsDeleted: false},
+			},
+			want: want{
+				statusCode: http.StatusOK,
+				wantUrls:   "3", wantUsers: "2",
+			},
+		},
+		{
+			name:          "Empty subnet",
+			myIP:          "240.192.2.2",
+			allowedSubnet: "",
+			db:            map[string]storage.URL{},
+			want: want{
+				statusCode: http.StatusForbidden,
+				wantUrls:   "", wantUsers: "",
+			},
+		},
+		{
+			name:          "Requester doesn't belong to trusted subnet",
+			myIP:          "1.192.3.2",
+			allowedSubnet: "240.192.2.0/1",
+			db:            map[string]storage.URL{},
+			want: want{
+				statusCode: http.StatusForbidden,
+				wantUrls:   "", wantUsers: "",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cfg, _ := InitTestConfig()
+			cfg.TrustedSubnet = tt.allowedSubnet
+			st := storage.InitStorage(tt.db, cfg)
+			app := app.NewApp(context.Background(), st, cfg)
+			app.Init()
+			hn := handler.InitHandler(app)
+
+			request := httptest.NewRequest(http.MethodGet, "/api/internal/stats", nil)
+			request.Header.Set("X-Real-IP", tt.myIP)
+
+			w := httptest.NewRecorder()
+
+			hn.HandleGetStats(w, request)
+
+			resp := handler.StatsResult{}
+			json.NewDecoder(w.Body).Decode(&resp)
+
+			res := w.Result()
+			res.Body.Close()
+
+			assert.Equal(t, tt.want.statusCode, res.StatusCode)
+			assert.Equal(t, tt.want.wantUsers, resp.Users)
+			assert.Equal(t, tt.want.wantUrls, resp.Urls)
+		})
+	}
+}

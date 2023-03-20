@@ -149,3 +149,18 @@ func (st *FileStorage) DeleteURLs(ctx context.Context, entries []DeletionEntry) 
 
 	return nil
 }
+
+// GetStats returns users, urls amount from db
+func (db *FileStorage) GetStats(ctx context.Context) (users, urls int, err error) {
+	exists := make(map[string]bool)
+	userCount := 0
+
+	for _, entry := range db.db {
+		if !exists[entry.UID] {
+			exists[entry.UID] = true
+			userCount++
+		}
+	}
+
+	return userCount, len(db.db), nil
+}

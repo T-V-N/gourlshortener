@@ -8,7 +8,9 @@ import (
 	"errors"
 	"io"
 	"log"
+	"net"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/T-V-N/gourlshortener/internal/app"
@@ -32,6 +34,12 @@ type URL struct {
 // ShortenResult is used during for some handlers while marshalling and unmarshalling
 type ShortenResult struct {
 	Result string `json:"result"`
+}
+
+// StatsResult is used by the GetStats handler to marshall server stats
+type StatsResult struct {
+	Urls  string `json:"urls"`
+	Users string `json:"users"`
 }
 
 // InitHandler creates handlers for an app
@@ -289,4 +297,36 @@ func (h *Handler) HandleDeleteListURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusAccepted)
+}
+
+// HandleStats returns urls and users stored on service's storage
+// HTTP response codes:
+//
+//	200 - returns server stats
+//	403 - request come from untrusted ip or trusted network wasn't configured
+func (h *Handler) HandleGetStats(w http.ResponseWriter, r *http.Request) {
+	ipStr := r.Header.Get("X-Real-IP")
+	ip := net.ParseIP(ipStr)
+	_, trustedNet, err := net.ParseCIDR(h.app.Config.TrustedSubnet)
+
+	if err != nil || !trustedNet.Contains(ip) {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	users, urls, err := h.app.GetStats(ctx)
+
+	w.Header().Set("content-type", "application/json")
+
+	stats := StatsResult{Users: strconv.Itoa(users), Urls: strconv.Itoa(urls)}
+
+	err = json.NewEncoder(w).Encode(stats)
+	if err != nil {
+		http.Error(w, "Unknown error", http.StatusInternalServerError)
+	}
+
+	w.WriteHeader(http.StatusOK)
 }

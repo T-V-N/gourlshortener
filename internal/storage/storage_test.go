@@ -140,6 +140,23 @@ func Test_FileStorage(t *testing.T) {
 
 		assert.Equal(t, len(urls), len(urlsInStorage))
 	})
+
+	t.Run("Get stats", func(t *testing.T) {
+		cfg, _ := InitFileTestConfig(true)
+		defer os.Remove(cfg.FileStoragePath)
+
+		expectedUsers, expectedURLs := 2, 3
+
+		st := storage.InitStorage(map[string]storage.URL{
+			"abc": {UID: "1", ShortURL: "abc", URL: "yandex.ru", IsDeleted: false},
+			"bcd": {UID: "2", ShortURL: "abc", URL: "yandex1.ru", IsDeleted: false},
+			"bca": {UID: "1", ShortURL: "abc", URL: "yandex2.ru", IsDeleted: false}}, cfg)
+
+		users, urls, _ := st.GetStats(context.Background())
+
+		assert.Equal(t, expectedUsers, users)
+		assert.Equal(t, expectedURLs, urls)
+	})
 }
 
 // func Test_DB(t *testing.T) {

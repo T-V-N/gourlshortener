@@ -157,3 +157,21 @@ func (db *DBStorage) DeleteURLs(ctx context.Context, entries []DeletionEntry) er
 
 	return nil
 }
+
+// GetStats returns users, urls amount from db
+func (db *DBStorage) GetStats(ctx context.Context) (users, urls int, err error) {
+	var userCount, urlsCount int
+	row := db.conn.QueryRow(ctx, "Select COUNT(DISTINCT user_uid) from urls")
+	err = row.Scan(&userCount)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	row = db.conn.QueryRow(ctx, "Select COUNT(*) from urls")
+	err = row.Scan(&urlsCount)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return userCount, urlsCount, nil
+}

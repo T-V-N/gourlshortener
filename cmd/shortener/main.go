@@ -76,6 +76,7 @@ func main() {
 	router.Delete("/api/user/urls", h.HandleDeleteListURL)
 	router.Post("/api/shorten/batch", h.HandleShortenBatchURL)
 	router.Get("/ping", h.HandlePing)
+	router.Get("/api/internal/stats", h.HandleGetStats)
 
 	outputBuildInfo()
 

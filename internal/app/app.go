@@ -162,3 +162,8 @@ func (app *App) DeleteListURL(ctx context.Context, rawHashes []string, uid strin
 
 	return nil
 }
+
+// GetStats gets users and urls stored in the storage
+func (app *App) GetStats(ctx context.Context) (users, urls int, err error) {
+	return app.DB.GetStats(ctx)
+}

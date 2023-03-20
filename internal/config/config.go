@@ -17,7 +17,9 @@ type Config struct {
 	FileStoragePath string `env:"FILE_STORAGE_PATH" json:"file_storage_path"` // Path to a file which will be used as a storage
 	SecretKey       string `env:"SECRET_KEY" envDefault:"hello"`              // Secret for hashing ops
 	DatabaseDSN     string `env:"DATABASE_DSN" json:"database_dsn"`           // Database connection string for DB-style storage
-	EnableHTTPS     bool   `env:"ENABLE_HTTPS" json:"enable_https"`           // flag enables https                                                   // Config json path
+	EnableHTTPS     bool   `env:"ENABLE_HTTPS" json:"enable_https"`           // flag enables https
+	TrustedSubnet   string `env:"TRUSTED_SUBNET" json:"trusted_subnet"`       // trusted subnet cidr
+
 }
 
 // Init tries to parse os.env and flags passed to the service run command.
@@ -52,6 +54,7 @@ func Init() (*Config, error) {
 	flag.StringVar(&cfg.DatabaseDSN, "d", cfg.DatabaseDSN, "secret key")
 	flag.BoolVar(&cfg.EnableHTTPS, "s", cfg.EnableHTTPS, "flag enable HTTPS")
 	flag.StringVar(&cfgPath, "c", cfgPath, "Config file")
+	flag.StringVar(&cfg.TrustedSubnet, "t", cfg.TrustedSubnet, "Trusted subnet")
 
 	flag.Parse()
 
