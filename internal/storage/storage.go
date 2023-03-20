@@ -36,6 +36,7 @@ type Storage interface {
 	BatchSaveURL(ctx context.Context, urls []URL) error          // Saves a list of urls to a storage
 	KillConn() error                                             // Gracefully stops a storage connection
 	DeleteURLs(context.Context, []DeletionEntry) error           // Deletes URLs from storage
+	GetStats(context.Context) (users, urls int, err error)       // Get amount of users, urls in DB
 }
 
 // InitStorage creates a storage based on file saving strategy (file or db) and returns it

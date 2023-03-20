@@ -1,3 +1,4 @@
+// Package auth allows server to handle requests using auth middleware which automatically checks users by request cookie and handles all related stuff ;)
 package auth
 
 import (
@@ -14,7 +15,8 @@ import (
 // UIDKey ensures a user UID will be safe in the user context and won't be re-written by other layers
 type UIDKey struct{}
 
-func generateRandom(size int) ([]byte, error) {
+// GenerateRandom generates random byte arr of given size
+func GenerateRandom(size int) ([]byte, error) {
 	b := make([]byte, size)
 	_, err := rand.Read(b)
 	if err != nil {
@@ -39,7 +41,7 @@ func isValidCookie(c *http.Cookie, key string) (bool, error) {
 }
 
 func generateCookie(key string) (c *http.Cookie, err error) {
-	uid, err := generateRandom(4)
+	uid, err := GenerateRandom(4)
 	if err != nil {
 		return nil, err
 	}
@@ -64,8 +66,8 @@ func generateCookie(key string) (c *http.Cookie, err error) {
 func InitAuth(cfg *config.Config) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			cookie, err := r.Cookie("auth_token")
-			if err != nil {
+			cookie, cookieErr := r.Cookie("auth_token")
+			if cookieErr != nil {
 				newCookie, err := generateCookie(cfg.SecretKey)
 				if err != nil {
 					http.Error(w, "Something went wrong", http.StatusBadRequest)

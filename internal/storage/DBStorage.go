@@ -1,4 +1,4 @@
-// Package contains different implementations of URL storage
+// Package storage contains different implementations of URL storage
 package storage
 
 import (
@@ -75,7 +75,7 @@ func (db *DBStorage) GetURL(ctx context.Context, hash string) (URL, error) {
 func (db *DBStorage) GetUrlsByUID(ctx context.Context, uid string) ([]URL, error) {
 	urls := make([]URL, 0)
 
-	rows, err := db.conn.Query(ctx, "SELECT hash, original_url from urls where user_uid = $1", uid)
+	rows, err := db.conn.Query(ctx, "SELECT url_hash, original_url from urls where user_uid = $1 and is_deleted = false", uid)
 	if err != nil {
 		return nil, err
 	}
@@ -156,4 +156,22 @@ func (db *DBStorage) DeleteURLs(ctx context.Context, entries []DeletionEntry) er
 	}
 
 	return nil
+}
+
+// GetStats returns users, urls amount from db
+func (db *DBStorage) GetStats(ctx context.Context) (users, urls int, err error) {
+	var userCount, urlsCount int
+	row := db.conn.QueryRow(ctx, "Select COUNT(DISTINCT user_uid) from urls")
+	err = row.Scan(&userCount)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	row = db.conn.QueryRow(ctx, "Select COUNT(*) from urls")
+	err = row.Scan(&urlsCount)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return userCount, urlsCount, nil
 }
