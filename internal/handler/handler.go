@@ -302,8 +302,9 @@ func (h *Handler) HandleDeleteListURL(w http.ResponseWriter, r *http.Request) {
 // HandleStats returns urls and users stored on service's storage
 // HTTP response codes:
 //
-//	200 - returns server stats
-//	403 - request come from untrusted ip or trusted network wasn't configured
+//		200 - returns server stats
+//		403 - request come from untrusted ip or trusted network wasn't configured
+//	 	500 - unable to get stats
 func (h *Handler) HandleGetStats(w http.ResponseWriter, r *http.Request) {
 	ipStr := r.Header.Get("X-Real-IP")
 	ip := net.ParseIP(ipStr)
@@ -318,6 +319,11 @@ func (h *Handler) HandleGetStats(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	users, urls, err := h.app.GetStats(ctx)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	w.Header().Set("content-type", "application/json")
 
