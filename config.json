@@ -1,0 +1,5 @@
+{
+    "trusted_subnet":"0.0.0.0/0",
+    "base_url":"http://localhost:8080",
+    "server_address":":8080"
+}

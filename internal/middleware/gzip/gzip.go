@@ -1,3 +1,4 @@
+// Package gzip allows server to handle gzipped requests
 package gzip
 
 import (
@@ -10,8 +11,8 @@ import (
 // Gzip struct is designed to comply with the mighty devs' requirement to close underlying Reader
 // Gzip.reader doesn't close anything by default ;(
 type Gzip struct {
-	GzipReader gzip.Reader
 	Body       io.ReadCloser
+	GzipReader gzip.Reader
 }
 
 // Close allows to close both gzip reader and the underlying reader
@@ -42,7 +43,7 @@ func GzipHandle(next http.Handler) http.Handler {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			gz := Gzip{*gzipReader, r.Body}
+			gz := Gzip{r.Body, *gzipReader}
 			defer gz.Close()
 
 			r.Body = &gz
