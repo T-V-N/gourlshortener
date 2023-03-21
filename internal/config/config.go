@@ -19,14 +19,14 @@ type Config struct {
 	DatabaseDSN     string `env:"DATABASE_DSN" json:"database_dsn"`           // Database connection string for DB-style storage
 	EnableHTTPS     bool   `env:"ENABLE_HTTPS" json:"enable_https"`           // flag enables https
 	TrustedSubnet   string `env:"TRUSTED_SUBNET" json:"trusted_subnet"`       // trusted subnet cidr
-
+	RPCPort         string `env:"RPC_PORT" json:"rpc_port"`                   // trusted subnet cidr
 }
 
 // Init tries to parse os.env and flags passed to the service run command.
 // Flags have priority over os envs.
 // Then in returns a config ready for usage by other service layers.
 func Init() (*Config, error) {
-	cfg := &Config{BaseURL: "http://localhost:8080", ServerAddress: ":8080", EnableHTTPS: false}
+	cfg := &Config{BaseURL: "http://localhost:8080", ServerAddress: ":8080", EnableHTTPS: false, RPCPort: ":3200"}
 
 	cfgPath := os.Getenv("CONFIG")
 	configFlag := flag.NewFlagSet("Only config", flag.ContinueOnError)

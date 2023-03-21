@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os/signal"
 	"syscall"
@@ -15,11 +16,15 @@ import (
 	"github.com/T-V-N/gourlshortener/internal/middleware/auth"
 	"github.com/T-V-N/gourlshortener/internal/middleware/gzip"
 	"golang.org/x/crypto/acme/autocert"
+	"google.golang.org/grpc"
 
 	"github.com/T-V-N/gourlshortener/internal/storage"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+
+	gh "github.com/T-V-N/gourlshortener/internal/grpcHandler"
+	pb "github.com/T-V-N/gourlshortener/internal/grpcHandler/proto"
 )
 
 var (
@@ -112,6 +117,24 @@ func main() {
 		}()
 	}
 
+	listen, err := net.Listen("tcp", cfg.RPCPort)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	s := grpc.NewServer(grpc.UnaryInterceptor(gh.InitAuthInterceptor(cfg)))
+	RPCServer := gh.InitRPCServer(cfg, a)
+	pb.RegisterURLShortenerServer(s, RPCServer)
+
+	go func() {
+		err := s.Serve(listen)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
+	fmt.Println("Сервер gRPC начал работу")
+
 	<-ctx.Done()
 	stop()
 
@@ -119,6 +142,11 @@ func main() {
 	defer stopShutdownCtx()
 
 	err = server.Shutdown(shutdownCtx)
+	s.GracefulStop()
+
+	if err != nil {
+		fmt.Print("Unable to shutdown server in 10 secs")
+	}
 
 	if err != nil {
 		fmt.Print("Unable to shutdown server in 10 secs")
