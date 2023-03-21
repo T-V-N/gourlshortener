@@ -68,9 +68,9 @@ func exctractUIDFromCtx(ctx context.Context) (string, error) {
 	return "", status.Error(codes.Internal, "wrong uid")
 }
 
+// RPC server manages RPC connections
 type RPCServer struct {
 	pb.UnimplementedURLShortenerServer
-	cfg *config.Config
 	app *app.App
 }
 
@@ -244,6 +244,9 @@ func (rh *RPCServer) GetListURL(ctx context.Context, in *pb.Empty) (*pb.GetListU
 // GetStats returns server stats
 func (rh *RPCServer) GetStats(ctx context.Context, in *pb.Empty) (*pb.GetStatsResponse, error) {
 	_, trustedNet, err := net.ParseCIDR(rh.app.Config.TrustedSubnet)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "can't parse cidr")
+	}
 
 	p, ok := peer.FromContext(ctx)
 	if !ok {
@@ -273,5 +276,5 @@ func (rh *RPCServer) GetStats(ctx context.Context, in *pb.Empty) (*pb.GetStatsRe
 
 // InitHandler creates handlers for an app
 func InitRPCServer(cfg *config.Config, a *app.App) *RPCServer {
-	return &RPCServer{pb.UnimplementedURLShortenerServer{}, cfg, a}
+	return &RPCServer{pb.UnimplementedURLShortenerServer{}, a}
 }
